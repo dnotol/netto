@@ -20,7 +20,7 @@ public class MapViewConditionsTests
         var conditions = MapView.From(river, run, MapNames.English).Links.Where(link => link.Kind == MapLinkKind.Condition).ToList();
 
         conditions.ShouldSatisfyAllConditions(
-            () => conditions.Select(Shape).ShouldBe(MapConditions.From(YearConditions.Of(run.Year!), MapView.ModulesOf(river)).Select(Shape)),
+            () => conditions.Select(Shape).ShouldBe(MapConditions.Of(run.Year!, MapView.ModulesOf(river)).Select(Shape)),
             () => conditions.ShouldAllBe(link => link.Route != null),
             () => conditions.Single(link => link.From.Module == RiverModule.Car).Holds.ShouldBe(false));
     }

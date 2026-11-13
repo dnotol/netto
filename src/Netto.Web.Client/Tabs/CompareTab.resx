@@ -183,4 +183,7 @@
   <data name="RefusedPlan" xml:space="preserve">
     <value>An amount of « {0} » is refused, so it has no figures to compare.</value>
   </data>
+  <data name="Row_equipment_costs" xml:space="preserve">
+    <value>IT and phone costs</value>
+  </data>
 </root>

@@ -17,9 +17,9 @@ public class MapQuietTests
     // Every lever in the plan and none with an amount: the example's inputs for each.
     private static readonly RiverInputs EveryLeverEmpty = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module)).WithPartner(true);
 
-    private static readonly RiverModule[] Chain = [RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Car];
+    private static readonly RiverModule[] Chain = [RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Equipment, RiverModule.Car];
 
-    public static TheoryData<OptionalModule> LeversMovingNothingOnTheirOwn => new(OptionalModule.Vouchers, OptionalModule.Rent, OptionalModule.Car, OptionalModule.Copyright);
+    public static TheoryData<OptionalModule> LeversMovingNothingOnTheirOwn => new(OptionalModule.Vouchers, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car, OptionalModule.Copyright);
 
     // A river with some of its levers emptied: each as the example holds it, with no amount, still in the
     // plan. The royalty then follows the pay with no creative share, so it comes to nothing; the partner, whom
@@ -29,6 +29,7 @@ public class MapQuietTests
         OptionalModule.Vouchers => inputs with { Vouchers = RiverInputs.Example.Vouchers },
         OptionalModule.Allowances => inputs with { Allowances = RiverInputs.Example.Allowances },
         OptionalModule.Rent => inputs with { Rent = RiverInputs.Example.Rent },
+        OptionalModule.Equipment => inputs with { Equipment = RiverInputs.Example.Equipment },
         OptionalModule.Car => inputs with { Car = RiverInputs.Example.Car },
         OptionalModule.Copyright => inputs with { Copyright = RiverInputs.Example.Copyright },
         OptionalModule.Household => inputs.WithTaxedSeparately(true),
@@ -40,7 +41,7 @@ public class MapQuietTests
     {
         var view = MapView.From(EveryLeverEmpty, EveryLeverEmpty.Run(), MapNames.English);
 
-        Quiet(view).ShouldBe([RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Car, RiverModule.Copyright]);
+        Quiet(view).ShouldBe([RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Equipment, RiverModule.Car, RiverModule.Copyright]);
     }
 
     [Theory]
@@ -183,7 +184,7 @@ public class MapQuietTests
         var river = Full with { Composition = MapModulesTests.Composition(bits) };
         var run = river.Run();
         var modules = MapView.ModulesOf(river);
-        IReadOnlyList<MapLink> links = [.. MapLinks.Of(river, run), .. MapConditions.From(YearConditions.Of(run.Year!), modules)];
+        IReadOnlyList<MapLink> links = [.. MapLinks.Of(river, run), .. MapConditions.Of(run.Year!, modules)];
         var grid = MapLayout.Grid(modules, MapNames.English, badgeLines: MapBadges.Lines(MapBadges.Of(links)), gateLines: MapLayoutTests.GateLines(river));
         var unfolded = MapLayout.Routed(grid, MapPocketLine.Of(links));
 
@@ -202,7 +203,7 @@ public class MapQuietTests
     [Fact]
     public void From_quietLeversOnTheCompanysLine_runTheLineAboveThemOnPastThemNamingThem()
     {
-        var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
+        var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car);
         var handOff = MapLinks.Of(river, river.Run()).Single(link => link.From == MapEnd.Beside(RiverModule.Vouchers) && link.To.Lever is not null);
 
         var view = MapView.From(river, river.Run(), MapNames.English);
@@ -211,7 +212,7 @@ public class MapQuietTests
         view.ShouldSatisfyAllConditions(
             () => line.Select(link => (link.From.Id, link.To.Id)).ShouldBe([("company-year", "company-line-vouchers"), ("company-line-vouchers", "split")]),
             () => (line[1].Card, line[1].Carries, line[1].Amount).ShouldBe((handOff.Card, handOff.Carries, handOff.Amount)),
-            () => line[1].Through.ShouldBe([RiverModule.Allowances, RiverModule.Rent, RiverModule.Car]),
+            () => line[1].Through.ShouldBe([RiverModule.Allowances, RiverModule.Rent, RiverModule.Equipment, RiverModule.Car]),
             () => view.Links.Where(link => Quiet(view).Any(lever => new[] { link.From, link.To }.Any(end => end == MapEnd.Of(lever) || end.Lever == lever))).ShouldBeEmpty());
     }
 
@@ -234,14 +235,14 @@ public class MapQuietTests
     [Fact]
     public void Places_quietLeversFollowingOneAnother_shareOnePlaceAndABoxPartsThem()
     {
-        var together = Emptied(Full, OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
+        var together = Emptied(Full, OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car);
         var parted = together with { Allowances = Full.Allowances };
 
         var (one, two) = (Places(together), Places(parted));
 
         one.ShouldSatisfyAllConditions(
-            () => one.ShouldBe(["company-year", "vouchers+allowances+rent+car quiet", "split", "copyright", "director-pay", "household", "corporate-tax", "dividend"]),
-            () => two.ShouldBe(["company-year", "vouchers quiet", "allowances", "rent+car quiet", "split", "copyright", "director-pay", "household", "corporate-tax", "dividend"]));
+            () => one.ShouldBe(["company-year", "vouchers+allowances+rent+equipment+car quiet", "split", "copyright", "director-pay", "household", "corporate-tax", "dividend"]),
+            () => two.ShouldBe(["company-year", "vouchers quiet", "allowances", "rent+equipment+car quiet", "split", "copyright", "director-pay", "household", "corporate-tax", "dividend"]));
     }
 
     // A lever that moves money again gets its box back in its place: its row, as the map draws it with no
@@ -249,7 +250,7 @@ public class MapQuietTests
     [Fact]
     public void From_aQuietLeverGivenItsAmounts_getsItsBoxBackInItsPlace()
     {
-        var river = Emptied(Full, OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car) with { Allowances = Full.Allowances };
+        var river = Emptied(Full, OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car) with { Allowances = Full.Allowances };
 
         var view = MapView.From(river, river.Run(), MapNames.English);
 
@@ -263,7 +264,7 @@ public class MapQuietTests
     [Fact]
     public void LinksOf_aQuietLever_isTheCompanysLineRunningPastIt()
     {
-        var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
+        var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car);
         var view = MapView.From(river, river.Run(), MapNames.English);
         var pill = Node(view, RiverModule.Rent).Slot;
 
@@ -282,7 +283,7 @@ public class MapQuietTests
     [Fact]
     public void Routed_theCompanysLinePastQuietLevers_runsStraightDownClearOfTheirPill()
     {
-        var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
+        var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car);
         var view = MapView.From(river, river.Run(), MapNames.English);
         var (pill, split) = (Node(view, RiverModule.Rent).Slot, Node(view, RiverModule.Split).Slot);
 
@@ -294,11 +295,11 @@ public class MapQuietTests
     }
 
     // A quiet pill is lower than the gates it replaces, the boxes holding the same badges and the other gates the
-    // same lines: three levers take one pill, their names one to a line, under the rows they would take.
+    // same lines: four levers take one pill, their names one to a line, under the rows they would take.
     [Fact]
     public void From_quietLevers_drawALowerMap()
     {
-        var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
+        var river = Emptied(Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car);
 
         var view = MapView.From(river, river.Run(), MapNames.English);
 

@@ -9,7 +9,7 @@ namespace Netto.Tests.WebClient.River;
 // plan chooses on the map so they can be filled (PlanMapChoiceTests).
 public class ModuleFoldsTests
 {
-    private static readonly PlanComposition Everything = new(true, true, true, true, true, true);
+    private static readonly PlanComposition Everything = new(true, true, true, true, true, true, true);
 
 
     // Kept from one version to the next, or a viewer's folds are forgotten.

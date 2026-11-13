@@ -191,7 +191,7 @@ public class MapBadgesTests
     internal static IReadOnlyList<MapLink> Links(RiverInputs river)
     {
         var run = river.Run();
-        return [.. MapLinks.Of(river, run), .. run.Year is { } year ? MapConditions.From(YearConditions.Of(year), MapView.ModulesOf(river)) : []];
+        return [.. MapLinks.Of(river, run), .. run.Year is { } year ? MapConditions.Of(year, MapView.ModulesOf(river)) : []];
     }
 
     internal static IReadOnlyDictionary<RiverModule, IReadOnlyList<MapBadge>> Of(RiverInputs river) => MapBadges.Of(Links(river));

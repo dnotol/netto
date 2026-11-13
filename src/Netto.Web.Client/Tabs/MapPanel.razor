@@ -3,6 +3,7 @@
 @using Netto.Web.Client.River
 @using Netto.Web.Client.River.CompanyCar
 @using Netto.Web.Client.River.Copyright
+@using Netto.Web.Client.River.Equipment
 @inject IStringLocalizer<MapPanel> L
 
 @* The room beside My plan's map for the card of the module or the bucket chosen on it: a module's the
@@ -38,6 +39,9 @@
                     break;
                 case RiverModule.Rent:
                     <RentCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
+                    break;
+                case RiverModule.Equipment:
+                    <EquipmentCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />
                     break;
                 case RiverModule.Car:
                     <CarCard Inputs="Inputs" InputsChanged="InputsChanged" Run="Run" Refused="Refused" />

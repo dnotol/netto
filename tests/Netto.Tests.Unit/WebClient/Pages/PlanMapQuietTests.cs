@@ -12,7 +12,7 @@ public class PlanMapQuietTests
 {
     // Every lever of the chain left empty, the royalty kept.
     private static readonly RiverInputs ChainEmpty = MapQuietTests.Emptied(MapLinksTests.Full,
-        OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
+        OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car);
 
     [Fact]
     public async Task Plan_aQuietLeverChosenGivenItsAmounts_getsItsBoxBackInItsPlaceAndStaysChosen()
@@ -28,6 +28,6 @@ public class PlanMapQuietTests
         shown.ShouldSatisfyAllConditions(
             () => (shown.Chosen, page.Errors.Count).ShouldBe((MapChoice.Of(RiverModule.Allowances), 0)),
             () => shown.ShownMap.Places().Select(place => (string.Join('+', place.Nodes.Select(node => node.End.Id)), place.Quiet)).Take(4).ShouldBe(
-                [("company-year", false), ("vouchers", true), ("allowances", false), ("rent+car", true)]));
+                [("company-year", false), ("vouchers", true), ("allowances", false), ("rent+equipment+car", true)]));
     }
 }

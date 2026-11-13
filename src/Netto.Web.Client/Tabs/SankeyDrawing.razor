@@ -52,7 +52,7 @@
     </div>
     @if (Loop is { } shown)
     {
-        <p class="sankey__loop">@L["Loop", Formats.Euros(shown.Band.Amount)]</p>
+        <p class="sankey__loop">@L[SankeyView.LoopText(shown.Band), Formats.Euros(shown.Band.Amount)]</p>
     }
 }
 else

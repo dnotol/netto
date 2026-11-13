@@ -14,7 +14,7 @@ namespace Netto.Tests.WebClient.River;
 // plan; with every one in it and its amounts still nothing, its figures stay those.
 public class BucketsViewTests
 {
-    private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false, false, false) };
+    private static readonly RiverInputs EveryLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false, false, false, false) };
 
     // The example's company: 120,000 of revenue and 19,590.70 of running costs, which every start is after.
     private static readonly CompanyFigures ExampleCompany = RiverInputs.Example.Company.ShouldNotBeNull();
@@ -415,7 +415,7 @@ public class BucketsViewTests
 
         view.ShouldSatisfyAllConditions(
             () => view.Buckets.Select(bucket => bucket.Key).ShouldBe(BucketsView.Keys),
-            () => (view.Start, view.CarCosts, view.AmountOf("expenses"), view.Buckets[0].Amount).ShouldBe((ExampleStart, 8_000m, 8_409.30m, year.NetInPocket)));
+            () => (view.Start, view.LeverExpenses, view.AmountOf("expenses"), view.Buckets[0].Amount).ShouldBe((ExampleStart, 8_000m, 8_409.30m, year.NetInPocket)));
     }
 
     // The director's 600 for the car leave the pocket for the company, so they stay in the buckets: they
@@ -440,7 +440,7 @@ public class BucketsViewTests
         var views = new[] { RiverInputs.Example.AddToPlan(OptionalModule.Car), ElectricCar(RiverInputs.Example).TakeOutOfPlan(OptionalModule.Car) }
             .Select(inputs => BucketsView.From(inputs.Run()).ShouldNotBeNull());
 
-        views.Select(view => (view.Start, view.CarCosts, view.AmountOf("expenses"))).ShouldBe([(ExampleStart, 0m, 409.30m), (ExampleStart, 0m, 409.30m)]);
+        views.Select(view => (view.Start, view.LeverExpenses, view.AmountOf("expenses"))).ShouldBe([(ExampleStart, 0m, 409.30m), (ExampleStart, 0m, 409.30m)]);
     }
 
     // The reach is out of what leaves the company once the expenses are paid, the 100,409.30 less the

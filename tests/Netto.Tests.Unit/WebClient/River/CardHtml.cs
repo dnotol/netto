@@ -7,6 +7,7 @@ using Netto.Web.Client;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Netto.Web.Client.River.Copyright;
+using Netto.Web.Client.River.Equipment;
 using Netto.Web.Client.Tabs;
 using Shouldly;
 
@@ -96,6 +97,8 @@ internal static class CardHtml
             yield return (typeof(AllowanceCard), RiverModule.Allowances);
         if (river.InPlan(OptionalModule.Rent))
             yield return (typeof(RentCard), RiverModule.Rent);
+        if (river.InPlan(OptionalModule.Equipment))
+            yield return (typeof(EquipmentCard), RiverModule.Equipment);
         if (river.InPlan(OptionalModule.Car))
             yield return (typeof(CarCard), RiverModule.Car);
         if (river.Company is not null)

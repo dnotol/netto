@@ -272,7 +272,7 @@ public class CompareRowsTests
     [Fact]
     public void Rows_leversInThePlanWithNothing_areZeroAndTheSame()
     {
-        var everyLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false, false, false) };
+        var everyLever = RiverInputs.Example with { Composition = new PlanComposition(true, true, true, false, false, false, false) };
 
         var rows = Rows(Compare(RiverInputs.Example, everyLever)).Where(row => row.Key is "vouchers" or "allowances" or "rent").ToList();
 

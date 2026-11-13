@@ -9,7 +9,7 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // The Sankey as a viewer meets it: every node a button named by its label, in the view's order, the buckets last; the
-// bands for the eye only, each in its place, those not touching the choice faded; the car's contribution a dashed
+// bands for the eye only, each in its place, those not touching the choice faded; the contributions to the car and the IT and phone a dashed
 // loop said in words under the drawing; no key and no « net »; the modules without a band
 // buttons of their own; one line where there is no picture. What a click does is the browser's.
 public class SankeyDrawingTests
@@ -88,25 +88,37 @@ public class SankeyDrawingTests
     }
 
     [Fact]
-    public async Task Drawing_theCarContribution_isSaidUnderTheDrawing_withItsAmount()
+    public async Task Drawing_theContributions_areSaidUnderTheDrawing_withTheirAmount()
     {
+        var year = Full.Run().Year!;
+
         var html = await RenderAsync(Full);
 
-        Text(html, "sankey__loop").ShouldContain(Formats.Euros(Full.Run().Year!.Car.Contribution));
+        Text(html, "sankey__loop").ShouldContain(Formats.Euros(year.Car.Contribution + year.Equipment.Contribution));
     }
 
     [Fact]
-    public async Task Drawing_theCarContributionSentence_readsAloneWithoutALegend()
+    public async Task Drawing_theContributionsSentence_readsAloneWithoutALegend()
     {
         var html = await RenderAsync(Full);
 
-        Text(html, "sankey__loop").ShouldBe($"Your contribution to the car, {Formats.Euros(Full.Run().Year!.Car.Contribution)}, goes back from your pocket to the company.");
+        Text(html, "sankey__loop").ShouldBe($"Your contributions to the car and to the IT and phone, {Formats.Euros(620m)}, go back from your pocket to the company.");
+    }
+
+    [Fact]
+    public async Task Drawing_theCarsContributionAlone_isSaidAsTheCars()
+    {
+        var river = Full.WithEquipmentContribution(0m);
+
+        var html = await RenderAsync(river);
+
+        Text(html, "sankey__loop").ShouldBe($"Your contribution to the car, {Formats.Euros(600m)}, goes back from your pocket to the company.");
     }
 
     [Fact]
     public async Task Drawing_noLoop_saysNone()
     {
-        var river = MapRendering.River("a car without contribution");
+        var river = MapRendering.River("a car without contribution").WithEquipmentContribution(0m);
 
         var html = await RenderAsync(river);
 

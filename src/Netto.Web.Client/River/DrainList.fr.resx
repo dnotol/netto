@@ -192,4 +192,16 @@
   <data name="To_director_pay" xml:space="preserve">
     <value>vers Rémunération de dirigeant, au même impôt que votre rémunération</value>
   </data>
+  <data name="To_equipment" xml:space="preserve">
+    <value>vers l'informatique et téléphonie</value>
+  </data>
+  <data name="Drain_left_after_equipment" xml:space="preserve">
+    <value>Reste après l'informatique et téléphonie</value>
+  </data>
+  <data name="Drain_equipment_costs" xml:space="preserve">
+    <value>Frais annuels de l'informatique et téléphonie</value>
+  </data>
+  <data name="Drain_equipment_contribution" xml:space="preserve">
+    <value>Votre intervention pour son utilisation à des fins personnelles</value>
+  </data>
 </root>

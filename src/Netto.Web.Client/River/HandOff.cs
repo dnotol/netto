@@ -1,10 +1,11 @@
 using Netto.Core.Simulation;
 using Netto.Web.Client.River.CompanyCar;
+using Netto.Web.Client.River.Equipment;
 
 namespace Netto.Web.Client.River;
 
 // What each lever before the split hands on down the river, from the year's figures: the vouchers, the
-// expense allowances, the rent and the car each receive what the levers above leave of what the company
+// expense allowances, the rent, the IT and phone and the car each receive what the levers above leave of what the company
 // earns before it pays its director anything (Before), take what they cost the company (Cost) and pass
 // on the rest (After), the last of them what the split shares between the pay, a royalty and the company
 // (Shared). A module out of the plan costs nothing: the scenario hands the engine none of it. These are
@@ -12,7 +13,7 @@ namespace Netto.Web.Client.River;
 internal static class HandOff
 {
     // The levers before the split, in the river's order.
-    private static readonly OptionalModule[] Levers = [OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car];
+    private static readonly OptionalModule[] Levers = [OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car];
 
     // What a module takes off what the company earns: what reaches the pocket of the vouchers and the
     // allowances, the rent, the car's costs less the director's contribution, and the royalty the split
@@ -22,6 +23,7 @@ internal static class HandOff
         OptionalModule.Vouchers => year.Vouchers.Total,
         OptionalModule.Allowances => year.Steps.Where(step => step.Event == TaxableEvent.ExpenseAllowances && step.Track == Track.InPocket).Sum(step => step.Amount),
         OptionalModule.Rent => year.Rent.Rent,
+        OptionalModule.Equipment => EquipmentView.FromProfit(year.Equipment),
         OptionalModule.Car => CarView.FromProfit(year.Car),
         OptionalModule.Copyright => year.Copyright.Royalty,
         OptionalModule.Household => 0m,
@@ -57,6 +59,7 @@ internal static class HandOff
         OptionalModule.Vouchers => "left_after_vouchers",
         OptionalModule.Allowances => "left_after_allowances",
         OptionalModule.Rent => "left_after_rent",
+        OptionalModule.Equipment => "left_after_equipment",
         _ => throw new ArgumentOutOfRangeException(nameof(lever), lever, "A lever no other follows before the split."),
     };
 }

@@ -183,4 +183,7 @@
   <data name="RefusedPlan" xml:space="preserve">
     <value>Un montant de «&#160;{0}&#160;» est refusé&#160;: il n'a donc pas de chiffres à comparer.</value>
   </data>
+  <data name="Row_equipment_costs" xml:space="preserve">
+    <value>Frais de l'informatique et téléphonie</value>
+  </data>
 </root>

@@ -90,4 +90,16 @@
   <data name="Condition_active_all_year" xml:space="preserve">
     <value>La société a eu une activité durant l'année&#160;: celle qui n'en a eu aucune pendant toute une année civile ne doit pas la cotisation pour cette année, une fois que le SPF Finances l'a attesté.</value>
   </data>
+  <data name="Condition_company_owns_and_contracts" xml:space="preserve">
+    <value>Les appareils sont ceux de la société et les abonnements internet et de téléphonie sont à son nom&#160;: un appareil dont vous êtes propriétaire, un abonnement internet dont vous êtes titulaire ou des factures téléphoniques dont vous êtes redevable ne sont pas évalués ainsi.</value>
+  </data>
+  <data name="Condition_private_use_allowed" xml:space="preserve">
+    <value>Vous pouvez les utiliser à des fins personnelles, chez vous ou ailleurs, pas seulement de manière occasionnelle dans les locaux de la société.</value>
+  </data>
+  <data name="Condition_subscription_not_on_invoices" xml:space="preserve">
+    <value>Un abonnement de téléphonie que la société met à votre disposition ne figure pas aussi parmi les frais de téléphone qu'elle vous rembourse sur justificatifs.</value>
+  </data>
+  <data name="Condition_contribution_within_each_piece" xml:space="preserve">
+    <value>Votre intervention, répartie entre les pièces comme vous la payez, ne dépasse pour aucune la valeur de cette pièce&#160;: au-delà, elle ne vient en déduction de rien.</value>
+  </data>
 </root>

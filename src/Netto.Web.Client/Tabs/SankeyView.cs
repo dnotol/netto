@@ -9,11 +9,12 @@ namespace Netto.Web.Client.Tabs;
 //
 // The company's line folds into Company year: its stretches, from one point of it to the next, join Company year
 // to itself and are no band, the last into the split staying Company year's band into « To share »; a lever's share
-// runs from Company year to the lever. The car, which takes no share, has its costs run through it: from Company
-// year to the car and on into the expenses, the car card's one figure twice. What comes back out of a bucket into
-// a module that sends money into it, the refund on the exempt dividend, a tax credit, is netted on that band, which
-// keeps what came back (Back); what comes back with no band to net it on, the director's contribution to a car, out
-// of the pocket into the company's line, is the one loop, from the pocket into Company year. Earlier profits, which
+// runs from Company year to the lever. The IT and phone and the car, which take no share, have their costs run
+// through them: from Company year to the lever and on into the expenses, its card's one figure twice. What comes
+// back out of a bucket into a module that sends money into it, the refund on the exempt dividend, a tax credit, is
+// netted on that band, which keeps what came back (Back); what comes back with no band to net it on, the
+// director's contributions to the IT and phone and to a car, out of the pocket into the company's line, is the one
+// loop, from the pocket into Company year. Earlier profits, which
 // no link carries, are a source into Dividend, the Dividend card's amount (DividendView). Tax bases, conditions and
 // the household move no money and are no band.
 //
@@ -30,7 +31,7 @@ internal sealed record SankeyView(IReadOnlyList<SankeyNode> Nodes, IReadOnlyList
 
     // The bands of the map's links, for a bar that draws its shares, earlier profits a source into Dividend while
     // there are any. None while a band nets to less than nothing, or money comes back into a module with no band to
-    // net it on but the car's contribution into the company's line, the one loop.
+    // net it on but the contributions into the company's line, the one loop.
     internal static SankeyView? Gather(IEnumerable<MapLink> links, BucketsView bar, decimal earlierProfits)
     {
         var forward = new List<(SankeyNode From, SankeyNode To, MapLink Link)>();
@@ -62,7 +63,7 @@ internal sealed record SankeyView(IReadOnlyList<SankeyNode> Nodes, IReadOnlyList
         if (earlierProfits > 0m)
             bands.Add(new SankeyBand(SankeyNode.EarlierProfits, SankeyNode.Of(RiverModule.Dividend), earlierProfits));
 
-        if (bands.Any(band => band.Amount < 0m || (band.Loop && !IsCarContribution(band))))
+        if (bands.Any(band => band.Amount < 0m || (band.Loop && !IsContribution(band))))
             return null;
 
         var drawn = bands.Where(band => band.Amount != 0m).OrderBy(band => band.Loop).ThenBy(band => SankeyLayout.Rank(band.From)).ThenBy(band => SankeyLayout.Rank(band.To)).ToList();
@@ -70,9 +71,19 @@ internal sealed record SankeyView(IReadOnlyList<SankeyNode> Nodes, IReadOnlyList
         return new SankeyView(nodes, drawn, bar);
     }
 
-    // The one loop the Sankey draws: the director's contribution to a car, out of the pocket into the company's line.
-    private static bool IsCarContribution(SankeyBand loop) =>
-        loop.From == SankeyNode.InBucket("pocket") && loop.To == SankeyNode.Of(RiverModule.CompanyYear) && loop.Links.All(link => link.Card == RiverModule.Car);
+    // The one loop the Sankey draws: the director's contributions to a car and to the IT and phone, out of the pocket
+    // into the company's line.
+    private static bool IsContribution(SankeyBand loop) =>
+        loop.From == SankeyNode.InBucket("pocket") && loop.To == SankeyNode.Of(RiverModule.CompanyYear) && loop.Links.All(link => link.Card is RiverModule.Car or RiverModule.Equipment);
+
+    // The words under the drawing for the loop, naming whose contribution it holds: the car's, the IT and phone's,
+    // or both.
+    public static string LoopText(SankeyBand loop) => (loop.Links.Any(link => link.Card == RiverModule.Car), loop.Links.Any(link => link.Card == RiverModule.Equipment)) switch
+    {
+        (true, true) => "Loop_Both",
+        (false, true) => "Loop_Equipment",
+        _ => "Loop_Car",
+    };
 
     // What enters a node, the loop into it included.
     public decimal In(SankeyNode node) => Bands.Where(band => band.To == node).Sum(band => band.Amount);

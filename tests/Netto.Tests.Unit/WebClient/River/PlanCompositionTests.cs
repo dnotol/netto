@@ -7,7 +7,7 @@ namespace Netto.Tests.WebClient.River;
 // the home office rent, the company car, then the copyright royalty, and the partner.
 public class PlanCompositionTests
 {
-    private static readonly PlanComposition Everything = new(true, true, true, true, true, true);
+    private static readonly PlanComposition Everything = new(true, true, true, true, true, true, true);
 
     [Fact]
     public void None_holdsNoModule()
@@ -18,7 +18,7 @@ public class PlanCompositionTests
     [Fact]
     public void Modules_areInTheRiversOrder()
     {
-        PlanComposition.Modules.ShouldBe([OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car, OptionalModule.Copyright, OptionalModule.Household]);
+        PlanComposition.Modules.ShouldBe([OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car, OptionalModule.Copyright, OptionalModule.Household]);
     }
 
     [Theory]
@@ -46,7 +46,7 @@ public class PlanCompositionTests
     {
         var composition = Everything.With(module, false);
 
-        (composition.Holds(module), composition.Count).ShouldBe((false, 5));
+        (composition.Holds(module), composition.Count).ShouldBe((false, 6));
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class PlanCompositionTests
     [InlineData(true, true, true, true, OptionalModule.Car, null)]
     public void NextAfter_isTheNextModuleInThePlan(bool vouchers, bool allowances, bool rent, bool car, OptionalModule module, OptionalModule? next)
     {
-        new PlanComposition(vouchers, allowances, rent, car, false, false).NextAfter(module).ShouldBe(next);
+        new PlanComposition(vouchers, allowances, rent, false, car, false, false).NextAfter(module).ShouldBe(next);
     }
 
     // The royalty comes after the split, which pays it beside the pay; the Copyright royalty card decides it.
@@ -79,7 +79,7 @@ public class PlanCompositionTests
     [InlineData(true, true, OptionalModule.Copyright, null)]
     public void NextAfter_withTheRoyalty_isNeverTheRoyalty(bool car, bool rent, OptionalModule module, OptionalModule? next)
     {
-        new PlanComposition(false, false, rent, car, true, false).NextAfter(module).ShouldBe(next);
+        new PlanComposition(false, false, rent, false, car, true, false).NextAfter(module).ShouldBe(next);
     }
 
     // The partner is beside the pay: what the levers leave goes on past it to the split.
@@ -89,7 +89,7 @@ public class PlanCompositionTests
     [InlineData(OptionalModule.Household)]
     public void NextAfter_withThePartner_isNeverThePartner(OptionalModule module)
     {
-        new PlanComposition(false, false, false, true, true, true).NextAfter(module).ShouldBeNull();
+        new PlanComposition(false, false, false, false, true, true, true).NextAfter(module).ShouldBeNull();
     }
 
     [Fact]

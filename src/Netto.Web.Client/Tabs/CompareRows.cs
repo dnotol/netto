@@ -41,6 +41,7 @@ internal static class CompareRows
                 Row("allowances", Lever(plan, OptionalModule.Allowances, year => AllowanceView.From(year, plan.Inputs.Composition).Total),
                     Lever(against, OptionalModule.Allowances, year => AllowanceView.From(year, against.Inputs.Composition).Total)),
                 Row("rent", Lever(plan, OptionalModule.Rent, year => year.Rent.Rent), Lever(against, OptionalModule.Rent, year => year.Rent.Rent)),
+                Row("equipment_costs", Lever(plan, OptionalModule.Equipment, year => year.Equipment.Costs), Lever(against, OptionalModule.Equipment, year => year.Equipment.Costs)),
                 Row("car_costs", Lever(plan, OptionalModule.Car, year => year.Car.Costs), Lever(against, OptionalModule.Car, year => year.Car.Costs)),
             ])),
             new CompareGroup("split", Drawn(

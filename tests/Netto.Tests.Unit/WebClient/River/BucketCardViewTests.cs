@@ -18,10 +18,10 @@ public class BucketCardViewTests
 
     public static TheoryData<string, RiverModule[]> Senders => new()
     {
-        { "pocket", [RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Car, RiverModule.Copyright, RiverModule.DirectorPay, RiverModule.Dividend] },
+        { "pocket", [RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Equipment, RiverModule.Car, RiverModule.Copyright, RiverModule.DirectorPay, RiverModule.Dividend] },
         { "taxes_on_pay", [RiverModule.Rent, RiverModule.Copyright, RiverModule.DirectorPay] },
         { "taxes_on_profit", [RiverModule.CorporateTax, RiverModule.Dividend] },
-        { "expenses", [RiverModule.CompanyYear, RiverModule.Car] },
+        { "expenses", [RiverModule.CompanyYear, RiverModule.Equipment, RiverModule.Car] },
     };
 
     private static readonly string[] CompanysBuckets = ["taxes_on_profit", "kept_in_company", "expenses"];

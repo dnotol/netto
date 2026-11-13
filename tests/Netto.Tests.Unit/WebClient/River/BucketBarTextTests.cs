@@ -169,8 +169,8 @@ public class BucketBarTextTests
     {
         { "FromProfit", RiverInputs.Example },
         { "FromProfitAndEarlier", RiverInputs.Example.WithEarlierProfits(10_000m) },
-        { "FromProfitWithCar", WithCar },
-        { "FromProfitWithCarAndEarlier", WithCar.WithEarlierProfits(10_000m) },
+        { "FromProfitWithExpenses", WithCar },
+        { "FromProfitWithExpensesAndEarlier", WithCar.WithEarlierProfits(10_000m) },
         { "FromPay", RiverInputs.Example.SkipCompany() },
         { "FromPayCost", RiverInputs.Example.SkipCompany().WithContributionsPaidBy(ContributionsPaidBy.Company) },
     };
@@ -190,8 +190,8 @@ public class BucketBarTextTests
     [Theory]
     [InlineData(false, 0, "Out of €100,409.30 of profit before INASTI's company contribution and what the company pays you.")]
     [InlineData(false, 10_000, "Out of €100,409.30 of profit before INASTI's company contribution and what the company pays you, and €10,000.00 kept from earlier years.")]
-    [InlineData(true, 0, "Out of €100,409.30 of profit before INASTI's company contribution, its car's costs and what the company pays you.")]
-    [InlineData(true, 10_000, "Out of €100,409.30 of profit before INASTI's company contribution, its car's costs and what the company pays you, and €10,000.00 kept from earlier years.")]
+    [InlineData(true, 0, "Out of €100,409.30 of profit before the company's expenses, INASTI's company contribution among them, and what it pays you.")]
+    [InlineData(true, 10_000, "Out of €100,409.30 of profit before the company's expenses, INASTI's company contribution among them, and what it pays you, and €10,000.00 kept from earlier years.")]
     public void From_profit_saysTheRiverStartsBeforeTheExpenses(bool car, int earlierProfits, string expected)
     {
         var view = BucketsView.From((car ? WithCar : RiverInputs.Example).WithEarlierProfits(earlierProfits).Run()).ShouldNotBeNull();

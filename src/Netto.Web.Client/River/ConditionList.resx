@@ -90,4 +90,16 @@
   <data name="Condition_active_all_year" xml:space="preserve">
     <value>The company had some activity in the year: one with none for a whole calendar year owes none for it, once the SPF Finances attests it.</value>
   </data>
+  <data name="Condition_company_owns_and_contracts" xml:space="preserve">
+    <value>The devices are the company's and the internet and phone subscriptions are in its name: a device you own, an internet subscription you hold or phone bills you owe are not valued this way.</value>
+  </data>
+  <data name="Condition_private_use_allowed" xml:space="preserve">
+    <value>You may use them privately, at home or elsewhere, not only occasionally at the company's premises.</value>
+  </data>
+  <data name="Condition_subscription_not_on_invoices" xml:space="preserve">
+    <value>A phone subscription the company provides is not also among the phone costs it reimburses you on invoices.</value>
+  </data>
+  <data name="Condition_contribution_within_each_piece" xml:space="preserve">
+    <value>Your contribution, shared over the pieces as you pay it, is no more for any piece than that piece's own value: beyond it, it comes off nothing.</value>
+  </data>
 </root>

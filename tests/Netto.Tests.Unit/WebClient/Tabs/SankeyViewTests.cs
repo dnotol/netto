@@ -185,13 +185,13 @@ public class SankeyViewTests
 
     [Theory]
     [MemberData(nameof(DrawnPlans))]
-    public void From_theOnlyLoop_isTheCarContribution_fromThePocketIntoCompanyYear(string plan)
+    public void From_theOnlyLoop_isTheContributions_fromThePocketIntoCompanyYear(string plan)
     {
         var view = View(plan)!;
 
         view.Bands.Where(band => band.Loop).ShouldAllBe(band =>
             band.From == SankeyNode.InBucket("pocket") && band.To == SankeyNode.Of(RiverModule.CompanyYear)
-            && band.Links.All(link => link.Card == RiverModule.Car));
+            && band.Links.All(link => link.Card == RiverModule.Car || link.Card == RiverModule.Equipment));
     }
 
     [Theory]
@@ -222,22 +222,59 @@ public class SankeyViewTests
     }
 
     [Fact]
-    public void From_carContribution_isOneLoopOfItsAmount()
+    public void From_theCarsAndTheITAndPhonesContributions_areOneLoopOfTheirSum()
     {
         var river = MapLinksTests.Full;
         var run = river.Run();
+        (run.Year!.Car.Contribution, run.Year.Equipment.Contribution).ShouldBe((600m, 20m));
 
         var loop = SankeyView.From(river, run)!.Bands.Single(band => band.Loop);
 
-        loop.Amount.ShouldBe(run.Year!.Car.Contribution);
+        loop.Amount.ShouldBe(620m);
     }
 
     [Fact]
-    public void From_carWithoutContribution_hasNoLoop()
+    public void From_theITAndPhonesContributionAlone_isTheLoop()
     {
         var river = MapRendering.River("a car without contribution");
 
+        var loop = SankeyView.From(river, river.Run())!.Bands.Single(band => band.Loop);
+
+        (loop.Amount, loop.Links.Select(link => link.Card).Distinct().Single()).ShouldBe((20m, RiverModule.Equipment));
+    }
+
+    [Fact]
+    public void From_noContribution_hasNoLoop()
+    {
+        var river = MapRendering.River("a car without contribution").WithEquipmentContribution(0m);
+
         SankeyView.From(river, river.Run())!.Bands.ShouldNotContain(band => band.Loop);
+    }
+
+    // The IT and phone takes no share of the company's line, as the car: its costs run through it into the expenses.
+    [Fact]
+    public void From_theITAndPhonesCosts_runThroughItIntoTheExpenses()
+    {
+        var river = MapLinksTests.Full;
+        var view = SankeyView.From(river, river.Run())!;
+
+        var through = (Band(view, SankeyNode.Of(RiverModule.CompanyYear), SankeyNode.Of(RiverModule.Equipment))?.Amount,
+            Band(view, SankeyNode.Of(RiverModule.Equipment), SankeyNode.InBucket("expenses"))?.Amount);
+
+        through.ShouldBe((900m, 900m));
+    }
+
+    [Theory]
+    [InlineData(true, true, "Loop_Both")]
+    [InlineData(true, false, "Loop_Car")]
+    [InlineData(false, true, "Loop_Equipment")]
+    public void LoopText_namesWhoseContributionsTheLoopHolds(bool car, bool equipment, string expected)
+    {
+        var river = MapLinksTests.Full.WithCarContribution(car ? 600m : 0m).WithEquipmentContribution(equipment ? 20m : 0m);
+
+        var loop = SankeyView.From(river, river.Run())!.Bands.Single(band => band.Loop);
+
+        SankeyView.LoopText(loop).ShouldBe(expected);
     }
 
     [Fact]

@@ -35,7 +35,7 @@ internal static class BucketBarText
     // company skipped, the pay, with the contributions the company pays on it when it does.
     public static string From(BucketsView view) => view.StartsAtPay
         ? view.CompanyPaysContributions ? "FromPayCost" : "FromPay"
-        : (view.CarCosts > 0m ? "FromProfitWithCar" : "FromProfit") + (view.EarlierProfits > 0m ? "AndEarlier" : "");
+        : (view.LeverExpenses > 0m ? "FromProfitWithExpenses" : "FromProfit") + (view.EarlierProfits > 0m ? "AndEarlier" : "");
 
     // What the river leaves in the pocket against the plan starred « Today », or that the two cannot be
     // compared (BaselineGain), in full: the live region says it after the pocket, and the bubble of a gain

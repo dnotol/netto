@@ -10,10 +10,10 @@ namespace Netto.Tests.WebClient.Tabs;
 // holds of the line as plain parts.
 internal static class MapReceivedHtml
 {
-    // The expense allowances, the rent and the car left empty, the vouchers kept: the quiet levers follow one
+    // The expense allowances, the rent, the IT and phone and the car left empty, the vouchers kept: the quiet levers follow one
     // another down the chain.
     public static readonly RiverInputs ChainQuiet =
-        MapQuietTests.Emptied(MapLinksTests.Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car);
+        MapQuietTests.Emptied(MapLinksTests.Full, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car);
 
     // Each part of the line the tab holds, its amount and the end it comes from.
     public static List<string> Listed(MapTab map) =>

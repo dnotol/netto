@@ -1,4 +1,5 @@
 using Netto.Core.DirectorPay;
+using Netto.Core.Simulation;
 
 namespace Netto.Web.Client.River;
 
@@ -10,11 +11,12 @@ internal static class DirectorPayFigures
 {
     // What the pay is taxed on besides its gross, each part above nothing and explained in its bubble:
     // the contributions the company pays on the director's behalf, which count as pay, beside the gross
-    // they are paid with, and the fund's fee it pays with them; a company car's benefit in kind, never
-    // paid in cash; and a copyright royalty's part beyond its limits, paid besides the payslip. Then the
+    // they are paid with, and the fund's fee it pays with them; each benefit in kind by its source, the
+    // IT and phone's and a company car's, never paid in cash, named as its own card names it, read from the
+    // year (none with the company skipped, which holds no lever); and a copyright royalty's part beyond its limits, paid besides the payslip. Then the
     // taxable pay the gross and they make, which they add up to. None while the pay is taxed on its gross
     // alone.
-    public static IReadOnlyList<FigureLine> Taxed(GrossToNetResult pay)
+    public static IReadOnlyList<FigureLine> Taxed(GrossToNetResult pay, YearResult? year)
     {
         // The company's contributions are never nothing when it pays them: the minimum applies.
         var companyPays = pay.ContributionsPaidByCompany > 0m;
@@ -22,7 +24,8 @@ internal static class DirectorPayFigures
         [
             new("Figure_CompanyContributions", companyPays ? pay.SocialContributions : 0m) { Help = "PaidByHint" },
             new("Figure_CompanyFundFee", companyPays ? pay.FundFee : 0m) { Help = "FundFeeHint" },
-            new("Figure_BenefitInKind", pay.BenefitInKind) { Help = "Help_BenefitInKind" },
+            new("Figure_EquipmentBenefit", year?.Equipment.Benefit ?? 0m) { Help = "Help_EquipmentBenefit" },
+            new("Figure_BenefitInKind", year?.Car.Benefit ?? 0m) { Help = "Help_BenefitInKind" },
             new("Figure_RequalifiedPay", pay.RequalifiedPay) { Help = "Help_RequalifiedPay" },
         ];
         var taxed = parts.Where(part => part.Amount > 0m).ToList();

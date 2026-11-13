@@ -18,8 +18,14 @@
   <data name="EarlierProfits" xml:space="preserve">
     <value>Réserves taxées des années précédentes</value>
   </data>
-  <data name="Loop" xml:space="preserve">
+  <data name="Loop_Car" xml:space="preserve">
     <value>Votre contribution à la voiture, {0}, retourne de votre poche à la société.</value>
+  </data>
+  <data name="Loop_Equipment" xml:space="preserve">
+    <value>Votre contribution à l'informatique et téléphonie, {0}, retourne de votre poche à la société.</value>
+  </data>
+  <data name="Loop_Both" xml:space="preserve">
+    <value>Vos contributions à la voiture et à l'informatique et téléphonie, {0}, retournent de votre poche à la société.</value>
   </data>
   <data name="NoMoney" xml:space="preserve">
     <value>Les bases imposables, les conditions et le ménage ne déplacent pas d'argent : ils sont listés à côté de la carte du module choisi.</value>

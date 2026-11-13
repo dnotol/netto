@@ -142,4 +142,10 @@
   <data name="Badge_TooMuchKept" xml:space="preserve">
     <value>trop gardé</value>
   </data>
+  <data name="Module_Equipment" xml:space="preserve">
+    <value>Informatique et téléphonie</value>
+  </data>
+  <data name="Rule_NoAllowanceBesideEquipment" xml:space="preserve">
+    <value>Pas d'indemnité d'ordinateur ou d'internet à côté de l'informatique de la société</value>
+  </data>
 </root>

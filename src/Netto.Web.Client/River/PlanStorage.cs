@@ -52,11 +52,12 @@ internal sealed record PlanBook(IReadOnlyList<SavedPlan> Plans, string? Today, s
 // none, and no word of whether there is a partner: version 8's household was its partner, so a plan holding
 // it declared one, the user's, and any other has none assumed, as adding the household does, and versions 1
 // to 9 no day the director has the car from or gives it back on, so theirs hold the car all year, assumed,
-// as they counted it. The car's
+// as they counted it, nor the IT and phone the company provides, so theirs hold none, out of the plan. The car's
 // engine, CO2, order date and statuses joined version 2 without raising it,
 // since version 2 had not left the car's story branch; a plan saved by the car's first build does not
 // open (operator, 2026-10-22). The rest of the royalty's story joins version 3 the same way, and the
-// fund's fee version 7 (decided unattended, 2026-10-22 and 2026-10-25).
+// fund's fee version 7 (decided unattended, 2026-10-22 and 2026-10-25), and the IT and phone version 10,
+// in the story that raised it (2026-11-13).
 internal static class PlanStorage
 {
     public const string Key = "netto.plans";
@@ -67,7 +68,7 @@ internal static class PlanStorage
     // 2: the company car. 3: the copyright royalty. 4: what the fund bills each quarter. 5: whether the
     // royalty follows the pay. 6: what the same car would cost privately. 7: the band of INASTI's company
     // contribution and the rate of the fund's management fee. 8: the partner. 9: whether there is a partner,
-    // and the dependants. 10: the days the director has the car.
+    // and the dependants. 10: the days the director has the car, and the IT and phone the company provides.
     public const int Version = 10;
 
     private const int FirstVersion = 1;
@@ -140,6 +141,23 @@ internal static class PlanStorage
 
     // No day the car is had from or given back on, which a plan of version 9 never held: held all year, assumed.
     private const string HeldAllYear = """{"value": null, "origin": "Default"}""";
+
+    // The IT and phone a plan of version 9 never held, as version 10 stored the example's: no piece, no internet
+    // connection assumed, nothing paid, provided all year, and no private cost given.
+    private const string EquipmentOfVersion10 = """
+        {
+            "pcs": {"value": 0, "origin": "Example"},
+            "tablets": {"value": 0, "origin": "Example"},
+            "mobilePhones": {"value": 0, "origin": "Example"},
+            "internet": {"value": false, "origin": "Default"},
+            "phoneSubscriptions": {"value": 0, "origin": "Example"},
+            "yearlyCosts": {"value": 0, "origin": "Example"},
+            "contribution": {"value": 0, "origin": "Example"},
+            "privateCost": {"value": null, "origin": "Yours"},
+            "providedFrom": {"value": null, "origin": "Default"},
+            "returnedOn": {"value": null, "origin": "Default"}
+        }
+        """;
 
     // An amount with no default, until the user gives it.
     private const string NoneGiven = """{"value": null, "origin": "Yours"}""";
@@ -239,7 +257,9 @@ internal static class PlanStorage
 
     // Version 10 brought the day the director has the car from and the day they give it back on: none, the car
     // held all year, as a plan of version 9 counted it.
-    private static bool ToVersion10(JsonObject plan) => Add(plan["car"], "heldFrom", HeldAllYear) && Add(plan["car"], "returnedOn", HeldAllYear);
+    private static bool ToVersion10(JsonObject plan) =>
+        Add(plan["car"], "heldFrom", HeldAllYear) && Add(plan["car"], "returnedOn", HeldAllYear)
+        && Add(plan["composition"], "equipment", "false") && Add(plan, "equipment", EquipmentOfVersion10);
 
     // Adds a member the version before never held, or refuses a plan that already holds it: that version
     // never wrote one.
@@ -272,10 +292,13 @@ internal static class PlanStorage
     private static StoredInputs Stored(RiverInputs inputs) => new(
         inputs.IncomeYear,
         inputs.Company is { } company ? new StoredCompany(Stored(company.Revenue), Stored(company.RunningCosts)) : null,
-        new StoredComposition(inputs.Composition.Vouchers, inputs.Composition.Allowances, inputs.Composition.Rent, inputs.Composition.Car, inputs.Composition.Copyright, inputs.Composition.Household),
+        new StoredComposition(
+            inputs.Composition.Vouchers, inputs.Composition.Allowances, inputs.Composition.Rent, inputs.Composition.Equipment, inputs.Composition.Car, inputs.Composition.Copyright,
+            inputs.Composition.Household),
         new StoredVouchers(Stored(inputs.Vouchers.MealVoucherDays), Stored(inputs.Vouchers.EcoVouchers), Stored(inputs.Vouchers.SportCultureVouchers)),
         new StoredAllowances(Stored(inputs.Allowances.Office), Stored(inputs.Allowances.Internet), Stored(inputs.Allowances.Computer), Stored(inputs.Allowances.Phone)),
         new StoredRent(Stored(inputs.Rent.CadastralIncome), Stored(inputs.Rent.ShareLet), Stored(inputs.Rent.Rent)),
+        Stored(inputs.Equipment),
         Stored(inputs.Car),
         Stored(inputs.Copyright),
         Stored(inputs.SmallCompany),
@@ -308,10 +331,13 @@ internal static class PlanStorage
         return new RiverInputs(
             stored.IncomeYear,
             stored.Company is { } company ? new CompanyFigures(Input(company.Revenue), Input(company.RunningCosts)) : null,
-            new PlanComposition(stored.Composition.Vouchers, stored.Composition.Allowances, stored.Composition.Rent, stored.Composition.Car, stored.Composition.Copyright, stored.Composition.Household),
+            new PlanComposition(
+                stored.Composition.Vouchers, stored.Composition.Allowances, stored.Composition.Rent, stored.Composition.Equipment, stored.Composition.Car, stored.Composition.Copyright,
+                stored.Composition.Household),
             new VoucherInputs(Input(stored.Vouchers.MealVoucherDays), Input(stored.Vouchers.EcoVouchers), Input(stored.Vouchers.SportCultureVouchers)),
             new AllowanceInputs(Input(stored.Allowances.Office), Input(stored.Allowances.Internet), Input(stored.Allowances.Computer), Input(stored.Allowances.Phone)),
             new RentInputs(Input(stored.Rent.CadastralIncome), Input(stored.Rent.ShareLet), Input(stored.Rent.Rent)),
+            Input(stored.Equipment),
             Input(stored.Car),
             new CopyrightInputs(
                 Input(stored.Copyright.Royalty), Input(stored.Copyright.FollowsPay), Input(stored.Copyright.AverageWithinCap), Input(stored.Copyright.HoldsAttestation), Input(stored.Copyright.CreativeShare)),
@@ -353,6 +379,14 @@ internal static class PlanStorage
     private static Input<T> Input<T>(StoredValue<T> stored) =>
         new(stored.Value, stored.Origin == InputOrigin.Example && stored.Value is 0m or 0 ? InputOrigin.None : stored.Origin);
 
+    private static StoredEquipment Stored(EquipmentInputs set) => new(
+        Stored(set.Pcs), Stored(set.Tablets), Stored(set.MobilePhones), Stored(set.Internet), Stored(set.PhoneSubscriptions), Stored(set.YearlyCosts),
+        Stored(set.Contribution), Stored(set.PrivateCost), Stored(set.ProvidedFrom), Stored(set.ReturnedOn));
+
+    private static EquipmentInputs Input(StoredEquipment stored) => new(
+        Input(stored.Pcs), Input(stored.Tablets), Input(stored.MobilePhones), Input(stored.Internet), Input(stored.PhoneSubscriptions), Input(stored.YearlyCosts),
+        Input(stored.Contribution), Input(stored.PrivateCost), Input(stored.ProvidedFrom), Input(stored.ReturnedOn));
+
     private static StoredCar Stored(CarInputs car) => new(
         Stored(car.CatalogueValue), Stored(car.FirstRegistration), Stored(car.YearlyCosts), Stored(car.CompanyPaysPrivateEnergy), Stored(car.PersonalContribution),
         Stored(car.Engine), Stored(car.Co2), Stored(car.NoCo2Data), Stored(car.Acquired), Stored(car.FakeHybrid), Stored(car.MatchingCarCo2),
@@ -386,6 +420,7 @@ internal sealed record StoredInputs(
     StoredVouchers Vouchers,
     StoredAllowances Allowances,
     StoredRent Rent,
+    StoredEquipment Equipment,
     StoredCar Car,
     StoredCopyright Copyright,
     StoredValue<bool> SmallCompany,
@@ -421,7 +456,7 @@ internal sealed record StoredValue<T>(T Value, InputOrigin Origin);
 
 internal sealed record StoredCompany(StoredValue<decimal> Revenue, StoredValue<decimal> RunningCosts);
 
-internal sealed record StoredComposition(bool Vouchers, bool Allowances, bool Rent, bool Car, bool Copyright, bool Household);
+internal sealed record StoredComposition(bool Vouchers, bool Allowances, bool Rent, bool Equipment, bool Car, bool Copyright, bool Household);
 
 internal sealed record StoredCopyright(
     StoredValue<decimal> Royalty,
@@ -435,6 +470,18 @@ internal sealed record StoredVouchers(StoredValue<int> MealVoucherDays, StoredVa
 internal sealed record StoredAllowances(StoredValue<decimal> Office, StoredValue<decimal> Internet, StoredValue<decimal> Computer, StoredValue<decimal> Phone);
 
 internal sealed record StoredRent(StoredValue<decimal> CadastralIncome, StoredValue<decimal> ShareLet, StoredValue<decimal> Rent);
+
+internal sealed record StoredEquipment(
+    StoredValue<int> Pcs,
+    StoredValue<int> Tablets,
+    StoredValue<int> MobilePhones,
+    StoredValue<bool> Internet,
+    StoredValue<int> PhoneSubscriptions,
+    StoredValue<decimal> YearlyCosts,
+    StoredValue<decimal> Contribution,
+    StoredValue<decimal?> PrivateCost,
+    StoredValue<DateOnly?> ProvidedFrom,
+    StoredValue<DateOnly?> ReturnedOn);
 
 internal sealed record StoredCar(
     StoredValue<decimal> CatalogueValue,

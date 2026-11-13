@@ -30,7 +30,7 @@ public class MapTabQuietTests
 
         Buttons(html).Select(button => (button.Module, button.Name, button.Pressed)).ShouldBe(MapView.ModulesOf(ChainQuiet).Select(module => (
             MapModules.Name(module),
-            module is RiverModule.Allowances or RiverModule.Rent or RiverModule.Car
+            module is RiverModule.Allowances or RiverModule.Rent or RiverModule.Equipment or RiverModule.Car
                 ? $"{CardTitle(module)} {Word}"
                 : string.Join(' ', [CardTitle(module), .. gates.For(module).Select(GateWords), .. badges.GetValueOrDefault(module, []).Select(BadgeWords)]),
             "false")));
@@ -46,8 +46,8 @@ public class MapTabQuietTests
 
         var row = rows.ShouldHaveSingleItem();
         row.ShouldSatisfyAllConditions(
-            () => Modules(row).ShouldBe(["allowances", "rent", "car"]),
-            () => Shown(row).ShouldBe("Expense allowances Home office rent Company car"));
+            () => Modules(row).ShouldBe(["allowances", "rent", "equipment", "car"]),
+            () => Shown(row).ShouldBe("Expense allowances Home office rent IT and phone Company car"));
     }
 
     // The row draws no amount: the chain's line through it says what the vouchers leave once, not once per

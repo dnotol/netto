@@ -12,6 +12,7 @@ internal static class ModuleFolds
         OptionalModule.Vouchers => "vouchers",
         OptionalModule.Allowances => "allowances",
         OptionalModule.Rent => "rent",
+        OptionalModule.Equipment => "equipment",
         OptionalModule.Car => "car",
         OptionalModule.Copyright => "copyright",
         OptionalModule.Household => "household",

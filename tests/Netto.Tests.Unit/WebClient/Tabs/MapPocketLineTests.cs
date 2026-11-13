@@ -42,7 +42,7 @@ public class MapPocketLineTests
 
         var stretches = Stretches(MapPocketLine.Of(links));
 
-        var points = new[] { RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Car, RiverModule.DirectorPay, RiverModule.Copyright, RiverModule.Dividend };
+        var points = new[] { RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Equipment, RiverModule.Car, RiverModule.DirectorPay, RiverModule.Copyright, RiverModule.Dividend };
         var totals = points.Select((point, index) => points.Take(index + 1).Sum(above => MapBundle.Sum(links.Where(link => link.From.Module == above && link.To == Pocket))
             - MapBundle.Sum(links.Where(link => link.From == Pocket && link.To.Lever == above)))).ToList();
         stretches.ShouldSatisfyAllConditions(
@@ -71,7 +71,7 @@ public class MapPocketLineTests
 
     // The pocket line is drawn as one shape: a step for each stretch, centred on the line and as wide as its
     // stretch, from where the line joining it at its upper point ends its turn down (each gate's 8 px under it,
-    // Director pay's 2.5), or from that point where none joins it (the car's, where the contribution leaves), to a
+    // Director pay's 2.5), or from that point where none joins it (the IT and phone's and the car's, where the contribution leaves), to a
     // pixel past where the next begins, so no seam shows between them, the last on under the pocket to its middle.
     [Fact]
     public void Steps_everyLever_widenAfterEachJoinFromTheEndOfItsTurn()
@@ -87,7 +87,7 @@ public class MapPocketLineTests
             () => steps.Select(step => (step.X, step.Width)).ShouldBe(stretches.Select(stretch => (stretch.Route.Points[0].X, stretch.Route.Width))),
             () => steps.Select(step => (step.Stretch.From.PocketLine, Math.Round((step.Top - step.Stretch.Route.Points[0].Y) / pixel, 6))).ShouldBe(
             [
-                (RiverModule.Vouchers, 8m), (RiverModule.Allowances, 8m), (RiverModule.Rent, 8m), (RiverModule.Car, 0m), (RiverModule.DirectorPay, 2.5m),
+                (RiverModule.Vouchers, 8m), (RiverModule.Allowances, 8m), (RiverModule.Rent, 8m), (RiverModule.Equipment, 0m), (RiverModule.Car, 0m), (RiverModule.DirectorPay, 2.5m),
                 (RiverModule.Copyright, 8m), (RiverModule.Dividend, 8m),
             ]),
             () => steps.Select(step => step.Bottom).ShouldBe([.. steps.Skip(1).Select(step => step.Top + pixel), stretches[^1].Route.Drawn[^1].Y]));

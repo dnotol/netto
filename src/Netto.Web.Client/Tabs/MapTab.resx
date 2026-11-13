@@ -142,4 +142,10 @@
   <data name="Badge_TooMuchKept" xml:space="preserve">
     <value>too much kept</value>
   </data>
+  <data name="Module_Equipment" xml:space="preserve">
+    <value>IT and phone</value>
+  </data>
+  <data name="Rule_NoAllowanceBesideEquipment" xml:space="preserve">
+    <value>No computer or internet allowance beside the company's IT</value>
+  </data>
 </root>

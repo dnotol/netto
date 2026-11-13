@@ -117,4 +117,13 @@
   <data name="Costs_Household" xml:space="preserve">
     <value>{0} more tax on your pay</value>
   </data>
+  <data name="Title_Equipment" xml:space="preserve">
+    <value>IT and phone</value>
+  </data>
+  <data name="Description_Equipment" xml:space="preserve">
+    <value>A PC, a phone or an internet connection the company provides</value>
+  </data>
+  <data name="Brings_Equipment" xml:space="preserve">
+    <value>{0} of IT and phone costs a year, paid by the company</value>
+  </data>
 </root>

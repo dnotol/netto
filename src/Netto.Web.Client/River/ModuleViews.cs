@@ -119,6 +119,7 @@ internal static class NextModule
         null => "split",
         OptionalModule.Allowances => "allowances",
         OptionalModule.Rent => "rent",
+        OptionalModule.Equipment => "equipment",
         OptionalModule.Car => "car",
         var next => throw new ArgumentOutOfRangeException(nameof(composition), next, "A module no lever passes on to."),
     };
@@ -643,7 +644,7 @@ internal static class RiverErrors
         RefusedInput.CadastralIncome or RefusedInput.ShareLet or RefusedInput.Rent => RiverModule.Rent,
         RefusedInput.EquipmentPcs or RefusedInput.EquipmentTablets or RefusedInput.EquipmentMobilePhones or RefusedInput.EquipmentInternet
             or RefusedInput.EquipmentPhoneSubscriptions or RefusedInput.EquipmentProvidedFrom or RefusedInput.EquipmentReturnedOn
-            or RefusedInput.EquipmentYearlyCosts or RefusedInput.EquipmentContribution or RefusedInput.EquipmentPrivateCost => RiverModule.River,
+            or RefusedInput.EquipmentYearlyCosts or RefusedInput.EquipmentContribution or RefusedInput.EquipmentPrivateCost => RiverModule.Equipment,
         RefusedInput.CarCatalogueValue or RefusedInput.CarCo2 or RefusedInput.CarMatchingCo2 or RefusedInput.CarAcquired or RefusedInput.CarYearlyCosts
             or RefusedInput.CarHeldFrom or RefusedInput.CarReturnedOn or RefusedInput.CarContribution or RefusedInput.CarPrivateCost => RiverModule.Car,
         RefusedInput.Royalty or RefusedInput.CreativeShare => RiverModule.Copyright,
@@ -672,6 +673,8 @@ public enum RiverModule
 
     Rent,
 
+    Equipment,
+
     Car,
 
     Copyright,
@@ -696,6 +699,7 @@ internal static class RiverModules
         RiverModule.Vouchers => OptionalModule.Vouchers,
         RiverModule.Allowances => OptionalModule.Allowances,
         RiverModule.Rent => OptionalModule.Rent,
+        RiverModule.Equipment => OptionalModule.Equipment,
         RiverModule.Car => OptionalModule.Car,
         RiverModule.Copyright => OptionalModule.Copyright,
         RiverModule.Household => OptionalModule.Household,

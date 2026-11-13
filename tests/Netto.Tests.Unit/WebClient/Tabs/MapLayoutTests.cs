@@ -34,6 +34,8 @@ public class MapLayoutTests
         (MapEnd.Of(RiverModule.Allowances), "pocket"),
         (MapEnd.Of(RiverModule.Rent), "taxes_on_pay"),
         (MapEnd.Of(RiverModule.Rent), "pocket"),
+        (MapEnd.Beside(RiverModule.Equipment), "pocket"),
+        (MapEnd.Beside(RiverModule.Equipment), "expenses"),
         (MapEnd.Beside(RiverModule.Car), "pocket"),
         (MapEnd.Beside(RiverModule.Car), "expenses"),
         (MapEnd.Of(RiverModule.Copyright), "taxes_on_pay"),
@@ -80,7 +82,7 @@ public class MapLayoutTests
     {
         MapModules.Order.Select(module => (module, MapLayout.Place(module).Column)).ShouldBe([
             (RiverModule.CompanyYear, MapColumn.Company), (RiverModule.Vouchers, MapColumn.Gates), (RiverModule.Allowances, MapColumn.Gates),
-            (RiverModule.Rent, MapColumn.Gates), (RiverModule.Car, MapColumn.Gates), (RiverModule.Split, MapColumn.Company),
+            (RiverModule.Rent, MapColumn.Gates), (RiverModule.Equipment, MapColumn.Gates), (RiverModule.Car, MapColumn.Gates), (RiverModule.Split, MapColumn.Company),
             (RiverModule.Copyright, MapColumn.Gates), (RiverModule.DirectorPay, MapColumn.You), (RiverModule.Household, MapColumn.Household),
             (RiverModule.CorporateTax, MapColumn.Company), (RiverModule.Dividend, MapColumn.Gates)]);
         ((int)MapLayout.Place(RiverModule.Household).Row).ShouldBeLessThan((int)MapLayout.Place(RiverModule.DirectorPay).Row);
@@ -182,14 +184,14 @@ public class MapLayoutTests
     public static TheoryData<RiverModule, int> EnglishTitleLines => new()
     {
         { RiverModule.CompanyYear, 1 }, { RiverModule.Vouchers, 1 }, { RiverModule.Allowances, 2 }, { RiverModule.Rent, 1 },
-        { RiverModule.Car, 1 }, { RiverModule.Split, 1 }, { RiverModule.Copyright, 1 }, { RiverModule.DirectorPay, 1 },
+        { RiverModule.Equipment, 1 }, { RiverModule.Car, 1 }, { RiverModule.Split, 1 }, { RiverModule.Copyright, 1 }, { RiverModule.DirectorPay, 1 },
         { RiverModule.Household, 1 }, { RiverModule.CorporateTax, 1 }, { RiverModule.Dividend, 1 },
     };
 
     public static TheoryData<RiverModule, int> FrenchTitleLines => new()
     {
         { RiverModule.CompanyYear, 2 }, { RiverModule.Vouchers, 2 }, { RiverModule.Allowances, 2 }, { RiverModule.Rent, 1 },
-        { RiverModule.Car, 1 }, { RiverModule.Split, 1 }, { RiverModule.Copyright, 1 }, { RiverModule.DirectorPay, 2 },
+        { RiverModule.Equipment, 2 }, { RiverModule.Car, 1 }, { RiverModule.Split, 1 }, { RiverModule.Copyright, 1 }, { RiverModule.DirectorPay, 2 },
         { RiverModule.Household, 1 }, { RiverModule.CorporateTax, 2 }, { RiverModule.Dividend, 1 },
     };
 
@@ -213,12 +215,12 @@ public class MapLayoutTests
     // the car's.
     public static TheoryData<RiverModule, int> EnglishQuietLines => new()
     {
-        { RiverModule.Vouchers, 1 }, { RiverModule.Allowances, 2 }, { RiverModule.Rent, 2 }, { RiverModule.Car, 1 }, { RiverModule.Copyright, 2 }, { RiverModule.Household, 1 },
+        { RiverModule.Vouchers, 1 }, { RiverModule.Allowances, 2 }, { RiverModule.Rent, 2 }, { RiverModule.Equipment, 1 }, { RiverModule.Car, 1 }, { RiverModule.Copyright, 2 }, { RiverModule.Household, 1 },
     };
 
     public static TheoryData<RiverModule, int> FrenchQuietLines => new()
     {
-        { RiverModule.Vouchers, 2 }, { RiverModule.Allowances, 2 }, { RiverModule.Rent, 2 }, { RiverModule.Car, 2 }, { RiverModule.Copyright, 1 }, { RiverModule.Household, 1 },
+        { RiverModule.Vouchers, 2 }, { RiverModule.Allowances, 2 }, { RiverModule.Rent, 2 }, { RiverModule.Equipment, 2 }, { RiverModule.Car, 2 }, { RiverModule.Copyright, 1 }, { RiverModule.Household, 1 },
     };
 
     [Theory]
@@ -391,15 +393,18 @@ public class MapLayoutTests
                 .ShouldBe(modules.Where(module => module != RiverModule.Split).Select(module => Units(without, module))));
     }
 
-    // The plan's modules without the car, the royalty and the dividend, whose lines make Director pay's and Corporate
-    // tax's boxes keep room beyond their names and badges.
-    private static List<RiverModule> Bare() => [.. MapView.ModulesOf(MapLinksTests.Full).Where(module => module is not (RiverModule.Car or RiverModule.Copyright or RiverModule.Dividend))];
+    // The plan's modules without the IT and phone, the car, the royalty and the dividend, whose lines make Director
+    // pay's and Corporate tax's boxes keep room beyond their names and badges.
+    private static List<RiverModule> Bare() =>
+        [.. MapView.ModulesOf(MapLinksTests.Full).Where(module => module is not (RiverModule.Equipment or RiverModule.Car or RiverModule.Copyright or RiverModule.Dividend))];
 
-    // Director pay's box keeps a name and a line, 0.8 of a chain row, while a car or a royalty reaches it, for the
+    // Director pay's box keeps a name and a line, 0.8 of a chain row, while the IT and phone, a car or a royalty
+    // reaches it, for the
     // arrowheads of the lines side by side into it; Corporate tax's keeps a name and two lines, 1.1, while a dividend
     // is beside it, for the lines between the dividend, the taxes and what is kept. Neither is a badge, and neither
     // box shrinks without them.
     [Theory]
+    [InlineData(RiverModule.Equipment, RiverModule.DirectorPay, 0.8)]
     [InlineData(RiverModule.Car, RiverModule.DirectorPay, 0.8)]
     [InlineData(RiverModule.Copyright, RiverModule.DirectorPay, 0.8)]
     [InlineData(RiverModule.Dividend, RiverModule.CorporateTax, 1.1)]
@@ -805,11 +810,11 @@ public class MapLayoutTests
     // chain row under the lowest box, each next row 0.35 under the one before, the buckets 0.2 under the last; two
     // rows with Director pay, 0.65, a rent's and a royalty's taxes a row each, and a whole chain row at least with a
     // dividend. Every lever: 0.25 over Company year's box, its row 1; the gates' 1.46, each 0.96 high for its name and two
-    // lines, the allowances' 1.75, theirs on two lines, the rent's 1.61, the car's 1.76, the partner's box beside it
+    // lines, the allowances' 1.75, theirs on two lines, the rent's 1.61, the IT and phone's 1.46, the car's 1.76, the partner's box beside it
     // 0.96 high for its name and the marital quotient's two lines, with the room round it for the quotient's amount
     // and arrowhead; the split's 1.22; the royalty's 1.68; Corporate tax's 2.3, its box 1.1 high for its name and the
     // two lines kept for the dividend's, the dividend's gate beside it reaching lower; the buckets' 0.5 and the 0.2
-    // under them, 0.25 + 12.78 + 0.5 + 0.2 = 13.73 chain rows. The example: 1, the split's
+    // under them, 0.25 + 14.24 + 0.5 + 0.2 = 15.19 chain rows. The example: 1, the split's
     // 1, the royalty's 1.6, Corporate tax's 1.67 for its box's 1.1, the dividend's gate 0.96 keeping 0.32 under it,
     // the buckets' 0.7 and 0.68, 6.65. The company skipped: Company year's row 1.07, its box 0.57 for its name and the state it
     // says under it, Director pay's 1, the buckets' 0.7 and 0.4, 3.17; with the partner in the plan, their row of
@@ -1053,7 +1058,8 @@ public class MapLayoutTests
     }
 
     // The most crossings each plan's map may have, by the plan's name (MapAmountsTests.Plans), the counts of the
-    // map as it was drawn before the pocket line gathered what reaches the director: a line each, the name and
+    // map as it was drawn before the pocket line gathered what reaches the director, and for the plans holding the
+    // IT and phone, which joined the river later, as it was drawn when it joined (operator, 2026-11-13): a line each, the name and
     // the count apart by a tab, a line opening on # a note. To take it again from a layout, write for each plan
     // its name, a tab and LineCrossings(MapAmountsTests.View(name)), one plan a line.
     private static IReadOnlyDictionary<string, int> Baseline => Counts.Value;
@@ -1102,7 +1108,7 @@ public class MapLayoutTests
         return companySkipped ? river.SkipCompany() : river;
     }
 
-    private static OptionalModule[] Levers(int bits) => [.. PlanComposition.Modules.Where((_, index) => (bits & (1 << index)) != 0)];
+    private static OptionalModule[] Levers(int bits) => MapModulesTests.Levers(bits);
 
     // The levers the map draws quiet, read off the map itself, the conditions of its year among its links.
     private static HashSet<RiverModule> Quiet(RiverInputs river) =>
@@ -1309,7 +1315,7 @@ public class MapLayoutTests
     // Plans by name, each with the map's height in chain rows the band leaves it.
     public static TheoryData<string, decimal> BandHeights() => new()
     {
-        { "every lever", 13.73m },
+        { "every lever", 15.19m },
         { "the example", 6.65m },
         { "the company skipped", 3.17m },
         { "the company skipped, the partner in the plan", 4.93m },

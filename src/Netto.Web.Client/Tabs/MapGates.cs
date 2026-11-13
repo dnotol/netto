@@ -3,6 +3,7 @@ using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Netto.Web.Client.River.Copyright;
+using Netto.Web.Client.River.Equipment;
 
 namespace Netto.Web.Client.Tabs;
 
@@ -65,7 +66,7 @@ internal sealed record MapGates(IReadOnlyList<MapGate> Gates, MapGateLine? Pay)
 
     private static bool IsGate(RiverModule module) => module switch
     {
-        RiverModule.Vouchers or RiverModule.Allowances or RiverModule.Rent or RiverModule.Car or RiverModule.Copyright or RiverModule.Dividend => true,
+        RiverModule.Vouchers or RiverModule.Allowances or RiverModule.Rent or RiverModule.Equipment or RiverModule.Car or RiverModule.Copyright or RiverModule.Dividend => true,
         RiverModule.CompanyYear or RiverModule.Split or RiverModule.DirectorPay or RiverModule.Household or RiverModule.CorporateTax => false,
         _ => throw new ArgumentOutOfRangeException(nameof(module), module, "A module the map has no column for."),
     };
@@ -74,6 +75,12 @@ internal sealed record MapGates(IReadOnlyList<MapGate> Gates, MapGateLine? Pay)
     {
         RiverModule.Vouchers or RiverModule.Allowances => Untaxed(ToYou(module, links)),
         RiverModule.Rent => [.. Across(RentFigures.From(RentView.From(year, inputs.Composition)), RentFigures.CompanyPays), .. ToYou(module, links)],
+        RiverModule.Equipment =>
+        [
+            .. FigureLines.Shown(EquipmentFigures.Benefit(year.Equipment)).Where(line => line.Key == EquipmentFigures.BenefitTaxed)
+                .Select(line => new MapGateLine(MapGateText.Benefit, line.Amount, ToYou: false)),
+            .. Sum(links.Where(link => link.From == Pocket && link.To == MapEnd.Beside(module))).Select(amount => new MapGateLine(MapGateText.YouPay, amount, ToYou: false)),
+        ],
         RiverModule.Car =>
         [
             .. FigureLines.Shown(CarFigures.Benefit(year.Car)).Where(line => line.Key == CarFigures.BenefitTaxed)

@@ -40,7 +40,7 @@
     @if (_view is not null && Run.Pay is { } pay)
     {
         <div class="director-pay__lines">
-            <FigureList Figures="@FigureWords.Of(L, DirectorPayFigures.Taxed(pay))" />
+            <FigureList Figures="@FigureWords.Of(L, DirectorPayFigures.Taxed(pay, Run.Year))" />
             <DrainList Drains="_view.Drains" />
         </div>
         <p class="director-pay__condition">@L[DirectorPayCardText.Note(_view.Surcharge)]</p>

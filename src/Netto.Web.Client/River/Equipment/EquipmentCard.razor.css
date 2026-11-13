@@ -1,0 +1,43 @@
+/* The inputs side by side when the card is wide enough, stacked otherwise; a row lines its inputs up
+   along their bottoms, whichever labels wrap. */
+.equipment__fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    align-items: end;
+    gap: 1rem;
+}
+
+/* A status the user ticks, with its origin and its bubble. */
+.equipment__tick {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+}
+
+/* What a figure cannot say: no piece given yet, or the pay held below the one set. */
+.equipment__note {
+    margin: 0;
+    color: var(--netto-text-muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.equipment__comparison {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--netto-line);
+    border-radius: 8px;
+}
+
+    .equipment__comparison p {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.55;
+    }
+
+.equipment__gap {
+    color: var(--netto-text);
+    font-weight: 500;
+}

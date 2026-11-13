@@ -245,8 +245,8 @@ public class CardHtmlTests
         Should.Throw<ShouldAssertException>(() => CardHtml.Card(Page, "rent"));
     }
 
-    // The example's five cards, or eleven with every optional module in the plan, all open.
-    public static TheoryData<bool, int> Rivers => new() { { false, 5 }, { true, 11 } };
+    // The example's five cards, or twelve with every optional module in the plan, all open.
+    public static TheoryData<bool, int> Rivers => new() { { false, 5 }, { true, 12 } };
 
     [Theory]
     [MemberData(nameof(Rivers))]

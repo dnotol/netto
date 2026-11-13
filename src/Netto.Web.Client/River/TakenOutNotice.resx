@@ -36,4 +36,7 @@
   <data name="TakenOut_Household" xml:space="preserve">
     <value>Your household taken out of your plan: you are taxed alone, with no dependants. Your values are kept.</value>
   </data>
+  <data name="TakenOut_Equipment" xml:space="preserve">
+    <value>IT and phone taken out of your plan. Your values are kept.</value>
+  </data>
 </root>

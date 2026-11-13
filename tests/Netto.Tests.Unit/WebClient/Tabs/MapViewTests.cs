@@ -85,7 +85,7 @@ public class MapViewTests
         var view = MapView.From(Full, Full.Run(), MapNames.English);
 
         (view.Links.Count, view.Links.All(link => link.Route is not null)).ShouldBe(
-            (MapPocketLine.Of(MapLinks.Of(Full, Full.Run())).Count + MapConditions.From(YearConditions.Of(Full.Run().Year!), MapView.ModulesOf(Full)).Count, true));
+            (MapPocketLine.Of(MapLinks.Of(Full, Full.Run())).Count + MapConditions.Of(Full.Run().Year!, MapView.ModulesOf(Full)).Count, true));
     }
 
     // A refused amount leaves the map without a figure, as it leaves the bar: its modules and buckets
@@ -182,7 +182,7 @@ public class MapViewTests
 
         var car = view.Links.Where(link => link.Touches(RiverModule.Car)).ToList();
 
-        (car.Any(link => link.To.Lever == RiverModule.Car && link.From.Lever == RiverModule.Rent), car.Any(link => link.From == MapEnd.OnPocketLine(RiverModule.Car)),
+        (car.Any(link => link.To.Lever == RiverModule.Car && link.From.Lever == RiverModule.Equipment), car.Any(link => link.From == MapEnd.OnPocketLine(RiverModule.Car)),
                 car.Any(link => link.To.Module == RiverModule.Split), car.Any(link => link.To.Module == RiverModule.DirectorPay))
             .ShouldBe((true, true, true, true));
     }

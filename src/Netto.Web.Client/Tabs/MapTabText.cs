@@ -1,6 +1,7 @@
 using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
+using Netto.Web.Client.River.Equipment;
 
 namespace Netto.Web.Client.Tabs;
 
@@ -60,6 +61,7 @@ internal static class MapTabText
         MapText.DrainList => typeof(DrainList),
         MapText.CompanyYearCard => typeof(CompanyYearCard),
         MapText.SharedCard => typeof(SharedCard),
+        MapText.EquipmentCard => typeof(EquipmentCard),
         MapText.CarCard => typeof(CarCard),
         MapText.VoucherCard => typeof(VoucherCard),
         MapText.AllowanceCard => typeof(AllowanceCard),

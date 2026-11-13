@@ -165,4 +165,10 @@
   <data name="SliderValue_Royalty" xml:space="preserve">
     <value>{0}, with a royalty of {1}</value>
   </data>
+  <data name="Figure_EquipmentBenefit" xml:space="preserve">
+    <value>IT and phone's benefit in kind after your contribution</value>
+  </data>
+  <data name="Help_EquipmentBenefit" xml:space="preserve">
+    <value>Your pay is taxed with the flat benefit in kind of the IT and phone the company provides, less your contribution for its private use, though the benefit is never paid in cash. The IT and phone card shows how it is built.</value>
+  </data>
 </root>

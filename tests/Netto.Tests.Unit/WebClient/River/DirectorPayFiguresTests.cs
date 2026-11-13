@@ -99,7 +99,7 @@ public class DirectorPayFiguresTests
     {
         var pay = inputs.Run().Pay.ShouldNotBeNull();
 
-        var lines = DirectorPayFigures.Taxed(pay);
+        var lines = DirectorPayFigures.Taxed(pay, inputs.Run().Year);
 
         (pay.GrossPay + lines.SkipLast(1).Sum(line => line.Amount), lines[^1].Key).ShouldBe((pay.TaxablePay, "Figure_TaxablePay"));
     }
@@ -122,7 +122,22 @@ public class DirectorPayFiguresTests
         Taxed(inputs).Select(line => line.Help).ShouldBe(["PaidByHint", "FundFeeHint", "Help_BenefitInKind", "Help_RequalifiedPay", null]);
     }
 
-    private static IReadOnlyList<FigureLine> Taxed(RiverInputs inputs) => DirectorPayFigures.Taxed(inputs.Run().Pay.ShouldNotBeNull());
+    // The IT and phone the company provides all year, a PC, a mobile phone with its subscription and internet,
+    // 216 (EquipmentCalculatorTests), beside the car's 1,714.29: each benefit by its source, the IT and phone's
+    // first, as the river runs, then the taxable pay they make.
+    [Fact]
+    public void Taxed_equipmentAndCar_isEachBenefitByItsSource()
+    {
+        var inputs = ElectricCar.AddToPlan(OptionalModule.Equipment).WithPcs(1).WithMobilePhones(1).WithPhoneSubscriptions(1).WithInternet(true);
+
+        Lines(Taxed(inputs)).ShouldBe([("Figure_EquipmentBenefit", 216m, null), ("Figure_BenefitInKind", 1_714.29m, null), ("Figure_TaxablePay", 51_930.29m, null)]);
+    }
+
+    private static IReadOnlyList<FigureLine> Taxed(RiverInputs inputs)
+    {
+        var run = inputs.Run();
+        return DirectorPayFigures.Taxed(run.Pay.ShouldNotBeNull(), run.Year);
+    }
 
     private static List<(string Key, decimal Amount, decimal? Share)> Lines(IEnumerable<FigureLine> lines) =>
         [.. lines.Select(line => (line.Key, line.Amount, line.Share))];

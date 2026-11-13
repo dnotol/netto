@@ -22,6 +22,7 @@ public class CompositionViewTests
                 new ModuleChoice(OptionalModule.Vouchers, false, null, false),
                 new ModuleChoice(OptionalModule.Allowances, false, null, false),
                 new ModuleChoice(OptionalModule.Rent, false, null, false),
+                new ModuleChoice(OptionalModule.Equipment, false, null, false),
                 new ModuleChoice(OptionalModule.Car, false, null, false),
                 new ModuleChoice(OptionalModule.Copyright, false, null, false),
                 new ModuleChoice(OptionalModule.Household, false, null, false),
@@ -146,13 +147,13 @@ public class CompositionViewTests
     [Fact]
     public void From_everyModuleInThePlan_countsThem()
     {
-        Menu(RiverInputs.Example with { Composition = new PlanComposition(true, true, true, true, true, false) }).Count.ShouldBe(5);
+        Menu(RiverInputs.Example with { Composition = new PlanComposition(true, true, true, true, true, true, false) }).Count.ShouldBe(6);
     }
 
     [Fact]
     public void RemovalNotice_moduleTakenOut_speaksOfIt()
     {
-        var before = new PlanComposition(true, false, true, false, false, false);
+        var before = new PlanComposition(true, false, true, false, false, false, false);
 
         RemovalNotice.About(null, before, before.With(OptionalModule.Rent, false)).ShouldBe(OptionalModule.Rent);
     }
@@ -161,7 +162,7 @@ public class CompositionViewTests
     [Fact]
     public void RemovalNotice_anotherModuleTakenOut_speaksOfTheLatest()
     {
-        var before = new PlanComposition(true, false, true, false, false, false);
+        var before = new PlanComposition(true, false, true, false, false, false, false);
 
         RemovalNotice.About(OptionalModule.Allowances, before, before.With(OptionalModule.Vouchers, false)).ShouldBe(OptionalModule.Vouchers);
     }

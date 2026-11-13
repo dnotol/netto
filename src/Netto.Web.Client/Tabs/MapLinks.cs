@@ -3,6 +3,7 @@ using Netto.Core.Simulation;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Netto.Web.Client.River.Copyright;
+using Netto.Web.Client.River.Equipment;
 
 namespace Netto.Web.Client.Tabs;
 
@@ -35,6 +36,7 @@ internal static class MapLinks
             .. inputs.InPlan(OptionalModule.Vouchers) ? Vouchers(year, composition) : [],
             .. inputs.InPlan(OptionalModule.Allowances) ? Allowances(year, composition) : [],
             .. inputs.InPlan(OptionalModule.Rent) ? Rent(year, composition) : [],
+            .. inputs.InPlan(OptionalModule.Equipment) ? Equipment(year, composition) : [],
             .. inputs.InPlan(OptionalModule.Car) ? Car(year, composition) : [],
             .. Split(inputs, run, year),
             .. inputs.InPlan(OptionalModule.Copyright) ? Drains(RiverModule.Copyright, CopyrightView.From(year).Drains) : [],
@@ -102,6 +104,16 @@ internal static class MapLinks
             .. Drains(RiverModule.Rent, [.. view.Drains, HandOff.Drain(year, OptionalModule.Rent, composition)]),
         ];
     }
+
+    // The IT and phone's lines, which take no share of the company's line, as the car's: its costs leave the line
+    // beside it into the expenses, the director's contribution joins it from the pocket, and what it leaves runs on
+    // down the line; then its benefit, taxed as the director's pay. The company adds nothing back of it.
+    private static IEnumerable<MapLink> Equipment(YearResult year, PlanComposition composition) =>
+    [
+        .. Drains(RiverModule.Equipment, [.. EquipmentView.From(year).Drains, HandOff.Drain(year, OptionalModule.Equipment, composition)], MapEnd.Beside(RiverModule.Equipment)),
+        .. TaxBase(RiverModule.Equipment, MapText.EquipmentCard, EquipmentFigures.Benefit(year.Equipment),
+            key => key == EquipmentFigures.BenefitTaxed ? RiverModule.DirectorPay : null),
+    ];
 
     // The car's lines, which take no share of the company's line: its costs leave the line beside it into the
     // expenses, the director's contribution joins it from the pocket, and what it leaves runs on to the split;
@@ -189,6 +201,7 @@ internal static class MapLinks
         "pocket" or "taxes_on_pay" or "taxes_on_profit" or "kept_in_company" or "expenses" => MapEnd.InBucket(to),
         "allowances" => MapEnd.Beside(RiverModule.Allowances),
         "rent" => MapEnd.Beside(RiverModule.Rent),
+        "equipment" => MapEnd.Beside(RiverModule.Equipment),
         "car" => MapEnd.Beside(RiverModule.Car),
         "split" => MapEnd.Of(RiverModule.Split),
         "director_pay" => MapEnd.Of(RiverModule.DirectorPay),

@@ -57,8 +57,8 @@ public class MapGatesTests
     }
 
     // Every lever with figures: each gate, in the river's order, says what crosses and, in gold, what reaches
-    // the viewer; the vouchers and the allowances what reaches the viewer, untaxed; the car its benefit on the
-    // pay and what the viewer pays for it.
+    // the viewer; the vouchers and the allowances what reaches the viewer, untaxed; the IT and phone and the car
+    // each its benefit on the pay and what the viewer pays for it.
     [Fact]
     public void Of_everyLever_saysWhatCrossesAndWhatReachesYou()
     {
@@ -72,6 +72,7 @@ public class MapGatesTests
             (RiverModule.Vouchers, $"{MapGateText.ToYou} {ToPocket(links, RiverModule.Vouchers)} gold | {MapGateText.Untaxed}"),
             (RiverModule.Allowances, $"{MapGateText.ToYou} {ToPocket(links, RiverModule.Allowances)} gold | {MapGateText.Untaxed}"),
             (RiverModule.Rent, $"{MapGateText.Across} {year.Rent.Rent} | {MapGateText.ToYou} {RentView.From(year, Full.Composition).AfterTax} gold"),
+            (RiverModule.Equipment, $"{MapGateText.Benefit} {year.Equipment.Benefit} | {MapGateText.YouPay} {year.Equipment.Contribution}"),
             (RiverModule.Car, $"{MapGateText.Benefit} {year.Car.Benefit} | {MapGateText.YouPay} {year.Car.Contribution}"),
             (RiverModule.Copyright, $"{MapGateText.Across} {year.Copyright.Royalty} | {MapGateText.ToYou} {CopyrightView.From(year).AfterTax} gold"),
             (RiverModule.Household, $"{MapGateText.Quotient} | {MapGateText.QuotientAmount} {Quotient(links)}"),
@@ -144,7 +145,7 @@ public class MapGatesTests
         var gates = MapGates.Of(MapRendering.EveryLeverEmpty, MapRendering.EveryLeverEmpty.Run());
 
         gates.Gates.Where(gate => RiverModules.Lever(gate.Module) is not null).Select(gate => (gate.Module, gate.Lines.Count)).ShouldBe([
-            (RiverModule.Vouchers, 0), (RiverModule.Allowances, 0), (RiverModule.Rent, 0), (RiverModule.Car, 0), (RiverModule.Copyright, 0), (RiverModule.Household, 2)]);
+            (RiverModule.Vouchers, 0), (RiverModule.Allowances, 0), (RiverModule.Rent, 0), (RiverModule.Equipment, 0), (RiverModule.Car, 0), (RiverModule.Copyright, 0), (RiverModule.Household, 2)]);
     }
 
     // The office rule keeps an Expense allowances paying nothing in its box beside a rent, with no money: it
@@ -271,7 +272,7 @@ public class MapGatesTests
 
         var lines = gates.For(module);
 
-        (lines.Count > 0).ShouldBe(module is RiverModule.Vouchers or RiverModule.Allowances or RiverModule.Rent or RiverModule.Car
+        (lines.Count > 0).ShouldBe(module is RiverModule.Vouchers or RiverModule.Allowances or RiverModule.Rent or RiverModule.Equipment or RiverModule.Car
             or RiverModule.Copyright or RiverModule.Household or RiverModule.Dividend);
     }
 

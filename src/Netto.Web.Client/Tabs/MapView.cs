@@ -63,7 +63,7 @@ internal sealed record MapView(IReadOnlyList<MapNode> Modules, IReadOnlyList<Map
         // one line down the director's column (MapPocketLine), and the amounts the map says elsewhere are marked
         // unsaid on their lines.
         IReadOnlyList<MapLink> links =
-            [.. MapLinks.Of(inputs, run), .. run.Year is { } year ? MapConditions.From(YearConditions.Of(year), modules) : []];
+            [.. MapLinks.Of(inputs, run), .. run.Year is { } year ? MapConditions.Of(year, modules) : []];
         var quiet = MapQuiet.Of(run, modules, links, MapQuiet.Holding(inputs));
         var badges = MapBadges.Of(links);
         var gates = MapGates.Of(inputs, run);
@@ -472,7 +472,7 @@ internal sealed record MapEnd
 
     // The point of the pocket line beside a module whose money reaches the director or leaves them: a way across,
     // or Director pay; none beside any other module.
-    public static MapEnd OnPocketLine(RiverModule module) => module is RiverModule.Vouchers or RiverModule.Allowances or RiverModule.Rent or RiverModule.Car
+    public static MapEnd OnPocketLine(RiverModule module) => module is RiverModule.Vouchers or RiverModule.Allowances or RiverModule.Rent or RiverModule.Equipment or RiverModule.Car
         or RiverModule.Copyright or RiverModule.Dividend or RiverModule.DirectorPay
         ? new(null, null, null, module)
         : throw new ArgumentOutOfRangeException(nameof(module), module, "A module whose money never reaches the pocket.");
@@ -488,6 +488,8 @@ internal enum MapText
     CompanyYearCard,
 
     SharedCard,
+
+    EquipmentCard,
 
     CarCard,
 
@@ -544,7 +546,7 @@ internal static class MapModules
     // The company's line, top to bottom: from Company year past the levers before the split, each taking its
     // share of it, into the split.
     public static IReadOnlyList<RiverModule> CompanysLine { get; } =
-        [RiverModule.CompanyYear, RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Car, RiverModule.Split];
+        [RiverModule.CompanyYear, RiverModule.Vouchers, RiverModule.Allowances, RiverModule.Rent, RiverModule.Equipment, RiverModule.Car, RiverModule.Split];
 
     public static IReadOnlyList<RiverModule> Order { get; } =
     [
@@ -552,6 +554,7 @@ internal static class MapModules
         RiverModule.Vouchers,
         RiverModule.Allowances,
         RiverModule.Rent,
+        RiverModule.Equipment,
         RiverModule.Car,
         RiverModule.Split,
         RiverModule.Copyright,
@@ -583,6 +586,7 @@ internal static class MapModules
         OptionalModule.Vouchers => RiverModule.Vouchers,
         OptionalModule.Allowances => RiverModule.Allowances,
         OptionalModule.Rent => RiverModule.Rent,
+        OptionalModule.Equipment => RiverModule.Equipment,
         OptionalModule.Car => RiverModule.Car,
         OptionalModule.Copyright => RiverModule.Copyright,
         OptionalModule.Household => RiverModule.Household,

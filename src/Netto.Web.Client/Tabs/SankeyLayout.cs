@@ -49,7 +49,7 @@ internal static class SankeyLayout
     public static IReadOnlyList<IReadOnlyList<SankeyNode>> Stages { get; } =
     [
         [SankeyNode.Of(RiverModule.CompanyYear)],
-        [SankeyNode.Of(RiverModule.Split), SankeyNode.Of(RiverModule.Vouchers), SankeyNode.Of(RiverModule.Allowances), SankeyNode.Of(RiverModule.Rent), SankeyNode.Of(RiverModule.Car)],
+        [SankeyNode.Of(RiverModule.Split), SankeyNode.Of(RiverModule.Vouchers), SankeyNode.Of(RiverModule.Allowances), SankeyNode.Of(RiverModule.Rent), SankeyNode.Of(RiverModule.Equipment), SankeyNode.Of(RiverModule.Car)],
         [SankeyNode.Of(RiverModule.Copyright), SankeyNode.Of(RiverModule.CorporateTax), SankeyNode.EarlierProfits],
         [SankeyNode.Of(RiverModule.DirectorPay), SankeyNode.Of(RiverModule.Dividend)],
         [.. BucketsView.Keys.Select(SankeyNode.InBucket)],

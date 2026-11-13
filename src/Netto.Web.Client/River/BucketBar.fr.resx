@@ -36,11 +36,11 @@
   <data name="FromProfitAndEarlier" xml:space="preserve">
     <value>Sur {0} de bénéfice avant la cotisation à charge des sociétés de l'INASTI et ce que la société vous verse, plus {1} de réserves taxées des années précédentes.</value>
   </data>
-  <data name="FromProfitWithCar" xml:space="preserve">
-    <value>Sur {0} de bénéfice avant la cotisation à charge des sociétés de l'INASTI, les frais de sa voiture et ce que la société vous verse.</value>
+  <data name="FromProfitWithExpenses" xml:space="preserve">
+    <value>Sur {0} de bénéfice avant les frais de la société, dont la cotisation à charge des sociétés de l'INASTI, et ce qu'elle vous verse.</value>
   </data>
-  <data name="FromProfitWithCarAndEarlier" xml:space="preserve">
-    <value>Sur {0} de bénéfice avant la cotisation à charge des sociétés de l'INASTI, les frais de sa voiture et ce que la société vous verse, plus {1} de réserves taxées des années précédentes.</value>
+  <data name="FromProfitWithExpensesAndEarlier" xml:space="preserve">
+    <value>Sur {0} de bénéfice avant les frais de la société, dont la cotisation à charge des sociétés de l'INASTI, et ce qu'elle vous verse, plus {1} de réserves taxées des années précédentes.</value>
   </data>
   <data name="FromPay" xml:space="preserve">
     <value>Sur {0} de rémunération brute.</value>

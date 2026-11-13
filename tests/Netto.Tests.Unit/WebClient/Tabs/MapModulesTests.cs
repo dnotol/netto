@@ -81,6 +81,15 @@ public class MapModulesTests
         withFigures.ShouldBe(MapView.ModulesOf(river).Where(module => !(companySkipped && module == RiverModule.CompanyYear)).Select(MapModules.Name));
     }
 
+    // The optional module each bit of a composition's number stands for, the IT and phone last since it joined the
+    // river after the others, so that a plan's number, and the crossings MapCrossings.txt holds by it, keep
+    // naming the same plan.
+    internal static IReadOnlyList<OptionalModule> Bits { get; } =
+        [OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car, OptionalModule.Copyright, OptionalModule.Household, OptionalModule.Equipment];
+
     internal static PlanComposition Composition(int bits) =>
-        new((bits & 1) != 0, (bits & 2) != 0, (bits & 4) != 0, (bits & 8) != 0, (bits & 16) != 0, (bits & 32) != 0);
+        Levers(bits).Aggregate(PlanComposition.None, (composition, module) => composition.With(module, true));
+
+    // The levers a number's bits name.
+    internal static OptionalModule[] Levers(int bits) => [.. Bits.Where((_, index) => (bits & (1 << index)) != 0)];
 }

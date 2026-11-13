@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>IT and phone</value>
+  </data>
+  <data name="Summary_More" xml:space="preserve">
+    <value>{0} more in your pocket</value>
+  </data>
+  <data name="Summary_Less" xml:space="preserve">
+    <value>{0} less in your pocket</value>
+  </data>
+  <data name="Summary_None" xml:space="preserve">
+    <value>No difference in your pocket</value>
+  </data>
+  <data name="SummaryNoSet" xml:space="preserve">
+    <value>Nothing provided yet</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>A PC, a tablet, a mobile phone, a phone subscription or an internet connection the company provides and you also use privately. The company pays what they cost out of its profit, before your pay, and deducts it in full; you are taxed on a flat benefit in kind for each as part of your pay, though it is never paid in cash.</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Remove IT and phone from your plan</value>
+  </data>
+  <data name="PcsLabel" xml:space="preserve">
+    <value>PCs</value>
+  </data>
+  <data name="PcsHint" xml:space="preserve">
+    <value>Desktops and laptops the company provides, each valued 72 a year. Beside one, the company pays no computer allowance.</value>
+  </data>
+  <data name="TabletsLabel" xml:space="preserve">
+    <value>Tablets</value>
+  </data>
+  <data name="TabletsHint" xml:space="preserve">
+    <value>Tablets the company provides, each valued 36 a year. Beside one, the company pays no computer allowance.</value>
+  </data>
+  <data name="MobilePhonesLabel" xml:space="preserve">
+    <value>Mobile phones</value>
+  </data>
+  <data name="MobilePhonesHint" xml:space="preserve">
+    <value>The phones themselves the company provides, each valued 36 a year; their subscriptions are counted apart.</value>
+  </data>
+  <data name="SubscriptionsLabel" xml:space="preserve">
+    <value>Phone subscriptions</value>
+  </data>
+  <data name="SubscriptionsHint" xml:space="preserve">
+    <value>Fixed or mobile subscriptions in the company's name, one for each phone number, so each SIM card with its own number counts, each valued 48 a year.</value>
+  </data>
+  <data name="InternetLabel" xml:space="preserve">
+    <value>Internet connection</value>
+  </data>
+  <data name="InternetHint" xml:space="preserve">
+    <value>An internet connection the company provides, fixed or mobile, valued 60 a year once, whatever the number of connections or of devices using them. Beside it, the company pays no internet allowance.</value>
+  </data>
+  <data name="CostsLabel" xml:space="preserve">
+    <value>Their yearly costs</value>
+  </data>
+  <data name="CostsHint" xml:space="preserve">
+    <value>Everything the set costs the company over the year: purchase or lease, subscriptions and connection, as the company bears them.</value>
+  </data>
+  <data name="ContributionLabel" xml:space="preserve">
+    <value>Your yearly contribution</value>
+  </data>
+  <data name="ContributionHint" xml:space="preserve">
+    <value>What you pay the company for the private use of the set, if anything. It comes off the benefit, never more than it.</value>
+  </data>
+  <data name="PeriodTitle" xml:space="preserve">
+    <value>When you have it</value>
+  </data>
+  <data name="ProvidedFromLabel" xml:space="preserve">
+    <value>You have it from</value>
+  </data>
+  <data name="ProvidedFromHint" xml:space="preserve">
+    <value>The first day the set is at your disposal, which counts. Leave it empty if you have had it since the start of the year or before.</value>
+  </data>
+  <data name="ReturnedOnLabel" xml:space="preserve">
+    <value>You give it back on</value>
+  </data>
+  <data name="ReturnedOnHint" xml:space="preserve">
+    <value>The day you give the set back, which does not count. Leave it empty if you keep it beyond the end of the year.</value>
+  </data>
+  <data name="Period_AllYear" xml:space="preserve">
+    <value>all year</value>
+  </data>
+  <data name="Period_ProvidedFrom" xml:space="preserve">
+    <value>yours from {0}</value>
+  </data>
+  <data name="Period_ReturnedOn" xml:space="preserve">
+    <value>given back on {0}</value>
+  </data>
+  <data name="NoSetYet" xml:space="preserve">
+    <value>Enter what the company provides to see its figures.</value>
+  </data>
+  <data name="Figure_Piece_Pc" xml:space="preserve">
+    <value>PCs: {0} × {1}</value>
+  </data>
+  <data name="Figure_Piece_Tablet" xml:space="preserve">
+    <value>Tablets: {0} × {1}</value>
+  </data>
+  <data name="Figure_Piece_MobilePhone" xml:space="preserve">
+    <value>Mobile phones: {0} × {1}</value>
+  </data>
+  <data name="Figure_Piece_Internet" xml:space="preserve">
+    <value>Internet connection</value>
+  </data>
+  <data name="Figure_Piece_PhoneSubscription" xml:space="preserve">
+    <value>Phone subscriptions: {0} × {1}</value>
+  </data>
+  <data name="Figure_Piece_Pc_Days" xml:space="preserve">
+    <value>PCs: {0} × {1}, for {2} days</value>
+  </data>
+  <data name="Figure_Piece_Tablet_Days" xml:space="preserve">
+    <value>Tablets: {0} × {1}, for {2} days</value>
+  </data>
+  <data name="Figure_Piece_MobilePhone_Days" xml:space="preserve">
+    <value>Mobile phones: {0} × {1}, for {2} days</value>
+  </data>
+  <data name="Figure_Piece_Internet_Days" xml:space="preserve">
+    <value>Internet connection, for {2} days</value>
+  </data>
+  <data name="Figure_Piece_PhoneSubscription_Days" xml:space="preserve">
+    <value>Phone subscriptions: {0} × {1}, for {2} days</value>
+  </data>
+  <data name="Help_PieceDays" xml:space="preserve">
+    <value>{0} a year, taken for the days you have it out of the year's, rounded to the cent for each piece.</value>
+  </data>
+  <data name="Figure_Benefit" xml:space="preserve">
+    <value>IT and phone's benefit in kind before your contribution</value>
+  </data>
+  <data name="Figure_Contribution" xml:space="preserve">
+    <value>Your contribution</value>
+  </data>
+  <data name="Figure_BenefitTaxed" xml:space="preserve">
+    <value>IT and phone's benefit in kind after your contribution</value>
+  </data>
+  <data name="Help_BenefitTaxed" xml:space="preserve">
+    <value>It is taxed as your pay, though never paid in cash.</value>
+  </data>
+  <data name="Figure_WithEquipment" xml:space="preserve">
+    <value>Your pocket with the IT and phone</value>
+  </data>
+  <data name="Figure_WithoutEquipment" xml:space="preserve">
+    <value>Without it</value>
+  </data>
+  <data name="Figure_TaxesOnPay" xml:space="preserve">
+    <value>Contributions and tax it adds</value>
+  </data>
+  <data name="Help_TaxesOnPay" xml:space="preserve">
+    <value>On Director pay, where its benefit is taxed with your pay.</value>
+  </data>
+  <data name="PayHeld" xml:space="preserve">
+    <value>Both plans run at {0} of pay, the most the company can pay once the set's costs are paid, so the difference is the set's alone.</value>
+  </data>
+  <data name="PrivateCostLabel" xml:space="preserve">
+    <value>Same things privately, a year</value>
+  </data>
+  <data name="PrivateCostHint" xml:space="preserve">
+    <value>What the same devices, subscriptions and connection would cost you over the year if you bought them yourself.</value>
+  </data>
+  <data name="Private_Waiting" xml:space="preserve">
+    <value>Enter it to weigh both.</value>
+  </data>
+  <data name="Private_Gain" xml:space="preserve">
+    <value>The company's IT and phone leave you {0} more than buying them yourself.</value>
+  </data>
+  <data name="Private_Loss" xml:space="preserve">
+    <value>The company's IT and phone cost you {0} more than buying them yourself.</value>
+  </data>
+  <data name="Private_Tie" xml:space="preserve">
+    <value>The company's IT and phone cost you what buying them yourself would.</value>
+  </data>
+</root>

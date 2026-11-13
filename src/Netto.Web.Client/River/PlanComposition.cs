@@ -11,6 +11,7 @@ public enum OptionalModule
     Vouchers,
     Allowances,
     Rent,
+    Equipment,
     Car,
     Copyright,
 
@@ -20,9 +21,9 @@ public enum OptionalModule
 // Which optional modules are in the plan, one of the plan's inputs. A module out of the plan neither
 // shows nor counts, so every figure traces back to a card on screen; its values stay in the river's
 // inputs meanwhile, and come back with it.
-public sealed record PlanComposition(bool Vouchers, bool Allowances, bool Rent, bool Car, bool Copyright, bool Household)
+public sealed record PlanComposition(bool Vouchers, bool Allowances, bool Rent, bool Equipment, bool Car, bool Copyright, bool Household)
 {
-    public static PlanComposition None { get; } = new(false, false, false, false, false, false);
+    public static PlanComposition None { get; } = new(false, false, false, false, false, false, false);
 
     // Every optional module, in the river's order, in the plan or not.
     public static IReadOnlyList<OptionalModule> Modules { get; } = Enum.GetValues<OptionalModule>();
@@ -34,6 +35,7 @@ public sealed record PlanComposition(bool Vouchers, bool Allowances, bool Rent, 
         OptionalModule.Vouchers => Vouchers,
         OptionalModule.Allowances => Allowances,
         OptionalModule.Rent => Rent,
+        OptionalModule.Equipment => Equipment,
         OptionalModule.Car => Car,
         OptionalModule.Copyright => Copyright,
         OptionalModule.Household => Household,
@@ -45,6 +47,7 @@ public sealed record PlanComposition(bool Vouchers, bool Allowances, bool Rent, 
         OptionalModule.Vouchers => this with { Vouchers = inPlan },
         OptionalModule.Allowances => this with { Allowances = inPlan },
         OptionalModule.Rent => this with { Rent = inPlan },
+        OptionalModule.Equipment => this with { Equipment = inPlan },
         OptionalModule.Car => this with { Car = inPlan },
         OptionalModule.Copyright => this with { Copyright = inPlan },
         OptionalModule.Household => this with { Household = inPlan },

@@ -7,7 +7,7 @@ namespace Netto.Web.Client.River;
 // car or its director anything, pay, vouchers, expense allowances or rent, with the profits kept from
 // earlier years or, with the company skipped, what the pay costs the company, the gross plus the
 // contributions it pays on the director's behalf when it does (CompanyPaysContributions). The
-// contribution and what a car costs the company (CarCosts), costs of the company like its running costs
+// contribution and what the IT and phone and a car cost the company (LeverExpenses), costs of the company like its running costs
 // (operator, 2026-10-23; decided 2026-10-25 for the contribution), are its expenses, the bar's last
 // bucket, nothing with the company skipped; the running costs are in no bucket, the river starting after
 // them. The vouchers, the allowances and the rent are in the pocket, the director's contribution to a car
@@ -27,9 +27,9 @@ internal sealed record BucketsView(
     // The taxes on pay hold a copyright royalty's tax apart too, once there is one.
     public bool TaxesOnPayIncludeRoyalty { get; init; }
 
-    // What a company car costs the company over the year, in the expenses: nothing until a car counts,
-    // or with the company skipped.
-    public decimal CarCosts { get; init; }
+    // What the IT and phone and a company car cost the company over the year, in the expenses: nothing until
+    // one counts, or with the company skipped.
+    public decimal LeverExpenses { get; init; }
 
     // What reaches the pocket out of what leaves the company: what the river starts from less its
     // expenses and what the company keeps at year end, which is still the director's. None where the bar
@@ -43,8 +43,8 @@ internal sealed record BucketsView(
     public static decimal StartOf(YearResult year) => year.Scenario.ProfitBeforeDirector + year.Scenario.EarlierProfits;
 
     // The company's expenses over the year, whatever it pays its director: INASTI's company contribution
-    // and what its car costs it.
-    public static decimal ExpensesOf(YearResult year) => year.CompanyContribution + year.Car.Costs;
+    // and what its IT and phone and its car cost it.
+    public static decimal ExpensesOf(YearResult year) => year.CompanyContribution + year.Equipment.Costs + year.Car.Costs;
 
     // What reaches the pocket out of what leaves the company, the start less its expenses and what it
     // keeps: the bar's reach, and the split's at each pay. None where nothing leaves it.
@@ -56,7 +56,7 @@ internal sealed record BucketsView(
             return null;
 
         var earlierProfits = run.Year?.Scenario.EarlierProfits ?? 0m;
-        var carCosts = run.Year?.Car.Costs ?? 0m;
+        var leverExpenses = run.Year is { } ran ? ran.Equipment.Costs + ran.Car.Costs : 0m;
         var (start, expenses, pocket, kept, steps) = run.Year is { } year
             ? (StartOf(year), ExpensesOf(year), year.NetInPocket, year.KeptInCompany, year.Steps)
             : (pay.CompanyCost, 0m, pay.NetInPocket, 0m, pay.Steps);
@@ -80,7 +80,7 @@ internal sealed record BucketsView(
             amounts.Select(bucket => new Bucket(bucket.Key, bucket.Amount, drawn ? bucket.Amount / start : null)).ToList())
         {
             TaxesOnPayIncludeRoyalty = steps.Any(step => step.Event == TaxableEvent.CopyrightRoyalty),
-            CarCosts = carCosts,
+            LeverExpenses = leverExpenses,
         };
     }
 

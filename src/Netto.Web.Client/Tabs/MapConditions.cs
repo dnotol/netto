@@ -13,24 +13,39 @@ namespace Netto.Web.Client.Tabs;
 // MapConditionsTests fails until it has.
 internal static class MapConditions
 {
-    public static IReadOnlyList<MapLink> From(IReadOnlyList<YearCondition> conditions, IReadOnlyList<RiverModule> onMap) =>
-        [.. conditions.Select(Link).Where(link => onMap.Contains(link.From.Module!.Value) && onMap.Contains(link.To.Module!.Value))];
+    // The conditions of the year the engine ran, the benefits' share of the pay drawn from the module that carries
+    // the benefit (BenefitsFrom).
+    public static IReadOnlyList<MapLink> Of(YearResult year, IReadOnlyList<RiverModule> onMap) =>
+        From(YearConditions.Of(year), onMap, BenefitsFrom(year, onMap));
+
+    public static IReadOnlyList<MapLink> From(IReadOnlyList<YearCondition> conditions, IReadOnlyList<RiverModule> onMap, RiverModule benefits = RiverModule.Car) =>
+        [.. conditions.Select(condition => Link(condition, benefits)).Where(link => onMap.Contains(link.From.Module!.Value) && onMap.Contains(link.To.Module!.Value))];
 
     // The office allowance acts on the rent, the pay and the benefits on corporate tax's rate, and a royalty and the
     // reserve on the pay the node « To share » gives. Each says whether it holds in a word or two (State), for the
     // Effects list, and marks the module it acts on with a badge (Badge) only where it costs the plan its rate or
     // its reserve: the office rule, a rule that holds and a royalty that lowers the pay keeping the rate, or no pay
     // at all, leave none.
-    public static MapLink Link(YearCondition condition) => condition switch
+    // The benefits' share of the pay is set by the flat-rate benefit the map draws it from (benefits): the car's
+    // while the car carries one, else the IT and phone's (BenefitsFrom).
+    public static MapLink Link(YearCondition condition, RiverModule benefits = RiverModule.Car) => condition switch
     {
         NoOfficeAllowanceBesideRent => Of(condition, RiverModule.Allowances, RiverModule.Rent, MapTabText.OfficeState, null),
-        NoAllowanceBesideEquipment => Of(condition, RiverModule.Allowances, RiverModule.Rent, MapTabText.OfficeState, null),
+        NoAllowanceBesideEquipment => Of(condition, RiverModule.Allowances, RiverModule.Equipment, MapTabText.OfficeState, null),
         PayKeepsReducedRate pay => Of(condition, RiverModule.Split, RiverModule.CorporateTax, MapTabText.RateState(pay.Holds), pay.Holds ? null : RateLost),
-        BenefitsWithinShareOfPay benefits => Of(condition, RiverModule.Car, RiverModule.CorporateTax, MapTabText.RateState(benefits.Holds), benefits.Holds ? null : RateLost),
+        BenefitsWithinShareOfPay within => Of(condition, benefits, RiverModule.CorporateTax, MapTabText.RateState(within.Holds), within.Holds ? null : RateLost),
         RoyaltyLowersPayKeepingReducedRate royalty => Of(condition, RiverModule.Copyright, RiverModule.Split, MapTabText.RoyaltyState(royalty), royalty is { Holds: false, With: null } ? RateLost : null),
         PayOutCoversReserve reserve => Of(condition, RiverModule.Dividend, RiverModule.Split, MapTabText.ReserveState(reserve.Holds), reserve.Holds ? null : Badge(MapTabText.ReserveShortBadge)),
         _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "A condition the map has no link for."),
     };
+
+    // The module whose benefit the share of the pay is drawn from: the car while it is on the map and carries a
+    // benefit taxed as pay, else the IT and phone while it is on the map, else the car. A selection of the run's
+    // figures, no rule.
+    public static RiverModule BenefitsFrom(YearResult year, IReadOnlyList<RiverModule> onMap) =>
+        onMap.Contains(RiverModule.Equipment) && year.Equipment.Benefit > 0m && !(onMap.Contains(RiverModule.Car) && year.Car.Benefit > 0m)
+            ? RiverModule.Equipment
+            : RiverModule.Car;
 
     private static readonly MapBadge RateLost = Badge(MapTabText.RateLostBadge);
 

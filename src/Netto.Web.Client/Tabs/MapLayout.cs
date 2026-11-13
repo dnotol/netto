@@ -251,6 +251,7 @@ internal static class MapLayout
         RiverModule.Vouchers => (MapRow.Vouchers, MapColumn.Gates),
         RiverModule.Allowances => (MapRow.Allowances, MapColumn.Gates),
         RiverModule.Rent => (MapRow.Rent, MapColumn.Gates),
+        RiverModule.Equipment => (MapRow.Equipment, MapColumn.Gates),
         RiverModule.Car => (MapRow.Car, MapColumn.Gates),
         RiverModule.Household => (MapRow.Car, MapColumn.Household),
         RiverModule.Split => (MapRow.Split, MapColumn.Company),
@@ -464,7 +465,7 @@ internal static class MapLayout
         private MapSlot Point(RiverModule lever)
         {
             var gate = Slot(MapEnd.Of(lever));
-            var bottom = lever == RiverModule.Car ? GapBelow(MapRow.Car, 1m) : gate.Bottom;
+            var bottom = PaysBack(lever) ? GapBelow(Place(lever).Row, 1m) : gate.Bottom;
             var half = MapLineWidths.Thickest / 2m * AcrossPixel;
             return new MapSlot(Spine - half, gate.Top, 2m * half, bottom - gate.Top);
         }
@@ -476,10 +477,14 @@ internal static class MapLayout
         private MapSlot PocketPoint(RiverModule module)
         {
             var box = Slot(MapEnd.Of(module));
-            var bottom = module is RiverModule.Car or RiverModule.DirectorPay ? GapBelow(Place(module).Row, 1m) : box.Bottom;
+            var bottom = PaysBack(module) || module == RiverModule.DirectorPay ? GapBelow(Place(module).Row, 1m) : box.Bottom;
             var half = MapLineWidths.Thickest / 2m * AcrossPixel;
             return new MapSlot(PocketLineX - half, box.Top, 2m * half, bottom - box.Top);
         }
+
+        // A lever whose costs leave the company's line for the expenses and whose contribution joins it from the
+        // pocket, under its gate: the IT and phone, and the car.
+        private static bool PaysBack(RiverModule module) => module is RiverModule.Equipment or RiverModule.Car;
 
         // The y of the gap between the boxes of the row given and of the next, at a fraction of its height.
         public decimal GapBelow(MapRow row, decimal fraction)
@@ -547,7 +552,7 @@ internal static class MapLayout
             var box = Math.Max(BoxUnits, Place(module).Column is MapColumn.Gates or MapColumn.Household ? GateUnits(module) : TitleUnits(module)) + _badgeLines.GetValueOrDefault(module) * BadgeUnits;
             return module switch
             {
-                RiverModule.DirectorPay when Moves(RiverModule.Car) || Moves(RiverModule.Copyright) => Math.Max(box, PayUnits),
+                RiverModule.DirectorPay when Moves(RiverModule.Equipment) || Moves(RiverModule.Car) || Moves(RiverModule.Copyright) => Math.Max(box, PayUnits),
                 RiverModule.CorporateTax when Moves(RiverModule.Dividend) => Math.Max(box, TaxUnits),
                 _ => box,
             };
@@ -724,6 +729,7 @@ internal static class MapLayout
                 RouteFamily.LineToExpenses or RouteFamily.CompanyYearToExpenses => ToExpenses(bundle, end, other),
                 RouteFamily.BenefitToPay => FromGateSide(bundle, end, PayFromGates, _grid.Slot(other).Top),
                 RouteFamily.RoyaltyToPay => RoyaltyToPay(bundle, end, other),
+                RouteFamily.EquipmentToPay => EquipmentToPay(bundle, end, other),
                 RouteFamily.Pay => Pay(bundle, end, other),
                 RouteFamily.Quotient => Quotient(end, other),
                 RouteFamily.PayToTaxes => Stepped(bundle, end, other, back => back ? PayFromTaxes : PayToTaxes, _ => 0m,
@@ -783,12 +789,13 @@ internal static class MapLayout
 
             return (from.Module, to.Module, kind) switch
             {
+                (RiverModule.Equipment, RiverModule.DirectorPay, _) => RouteFamily.EquipmentToPay,
                 (RiverModule.Car, RiverModule.DirectorPay, _) => RouteFamily.BenefitToPay,
                 (RiverModule.Copyright, RiverModule.DirectorPay, _) => RouteFamily.RoyaltyToPay,
                 (RiverModule.Split, RiverModule.DirectorPay, _) => RouteFamily.Pay,
                 (RiverModule.DirectorPay, RiverModule.Household, _) or (RiverModule.Household, RiverModule.DirectorPay, _) => RouteFamily.Quotient,
-                (RiverModule.Vouchers or RiverModule.Car, RiverModule.CorporateTax, MapLinkKind.TaxBase or MapLinkKind.Condition) => RouteFamily.AddBack,
-                (RiverModule.Allowances, RiverModule.Rent, MapLinkKind.Condition) => RouteFamily.Bracket,
+                (RiverModule.Vouchers or RiverModule.Equipment or RiverModule.Car, RiverModule.CorporateTax, MapLinkKind.TaxBase or MapLinkKind.Condition) => RouteFamily.AddBack,
+                (RiverModule.Allowances, RiverModule.Rent or RiverModule.Equipment, MapLinkKind.Condition) => RouteFamily.Bracket,
                 (RiverModule.Copyright or RiverModule.Dividend, RiverModule.Split, MapLinkKind.Condition) => RouteFamily.ConditionToSplit,
                 (RiverModule.Split, RiverModule.Copyright, _) => RouteFamily.SplitToRoyalty,
                 (RiverModule.Split, RiverModule.CorporateTax, _) => RouteFamily.SplitToCorporateTax,
@@ -804,7 +811,7 @@ internal static class MapLayout
             return Family(bundle) switch
             {
                 RouteFamily.Take => [(bundle.To, MapSide.Right)],
-                RouteFamily.Join or RouteFamily.GateToTaxes or RouteFamily.BenefitToPay or RouteFamily.RoyaltyToPay => [(end, MapSide.Left)],
+                RouteFamily.Join or RouteFamily.GateToTaxes or RouteFamily.BenefitToPay or RouteFamily.RoyaltyToPay or RouteFamily.EquipmentToPay => [(end, MapSide.Left)],
                 RouteFamily.LineToExpenses or RouteFamily.CompanyYearToExpenses => [(end, MapSide.Right)],
                 RouteFamily.Pay => [(end, MapSide.Left)],
                 RouteFamily.AddBack => [(end, MapSide.Right)],
@@ -832,7 +839,7 @@ internal static class MapLayout
             RouteFamily.CorporateTaxToDividend => 0m,
             RouteFamily.SplitToRoyalty => 1m,
             RouteFamily.AddBack => bundle.Kind == MapLinkKind.Condition ? 3m : -2.5m,
-            RouteFamily.BenefitToPay or RouteFamily.RoyaltyToPay => 0m,
+            RouteFamily.BenefitToPay or RouteFamily.RoyaltyToPay or RouteFamily.EquipmentToPay => 0m,
             RouteFamily.Join => 1m,
             RouteFamily.GateToTaxes => 2m + _lane.IndexOf(bundle) / 100m,
             _ => 0m,
@@ -870,15 +877,17 @@ internal static class MapLayout
                 : _grid.Slot(MapEnd.Of(lever)).CenterY;
         }
 
-        // Where the car's contribution joins the company's line: in the gap under the car's row, its arrowhead clear
-        // of the car's gate over it, so that the arrowhead of the line on into the split has the rest of the gap;
-        // what leaves the line for the pocket under it; and under the arrowhead of the marital quotient into the
-        // partner's box, while it points there.
+        // Where a contribution joins the company's line, the car's or the IT and phone's: in the gap under its lever's
+        // row, its arrowhead clear of the gate over it, so that the arrowhead of the line on down has the rest of the
+        // gap; what leaves the line for the pocket under it; and, beside the partner's box in the same row, under the
+        // arrowhead of the marital quotient into it, while it points there.
         private decimal ContributionY((MapEnd From, MapEnd To, MapLinkKind Kind) bundle)
         {
-            var y = _grid.GapBelow(MapRow.Car, 0m) + (MapLineWidths.ArrowHalf(_widths[bundle]) + EdgePixels) * _grid.DownPixel;
+            var lever = (bundle.From.Lever ?? bundle.To.Lever ?? RiverModule.Car);
+            var y = _grid.GapBelow(Place(lever).Row, 0m) + (MapLineWidths.ArrowHalf(_widths[bundle]) + EdgePixels) * _grid.DownPixel;
             var partner = MapEnd.Of(RiverModule.Household);
-            if (_bundles.FirstOrDefault(other => Family(other) == RouteFamily.Quotient && other.To == partner) is { From: not null } quotient)
+            if (Place(lever).Row == Place(RiverModule.Household).Row
+                && _bundles.FirstOrDefault(other => Family(other) == RouteFamily.Quotient && other.To == partner) is { From: not null } quotient)
                 y = Math.Max(y, _grid.Slot(partner).Bottom + (MapLineWidths.ArrowLength(_widths[quotient]) + _widths[bundle] / 2m + EdgePixels) * _grid.DownPixel);
             return y + (Back(bundle) ? 0m : 6m) * _grid.DownPixel;
         }
@@ -959,6 +968,17 @@ internal static class MapLayout
         {
             var (y, x, box) = (PortY(bundle, gate, MapSide.Left), LaneX(bundle), _grid.Slot(pay));
             var into = box.Bottom - (MapLineWidths.ArrowHalf(_widths[bundle]) + EdgePixels) * _grid.DownPixel;
+            return new MapRoute([new(_grid.Slot(gate).Left, y), new(x, y), new(x, into), new(box.Right, into)]);
+        }
+
+        // The IT and phone's benefit taxed as pay: out of its gate's left side to its track down the lane beside the
+        // gates, left of the rent's taxes over it, down to Director pay's top and into its right side above the pay,
+        // its arrowhead's base on the side, its highest edge a pixel under the box's top; the car's benefit takes
+        // Director pay's top, and the partner's box leaves no room beside it for a second arrowhead there.
+        private MapRoute EquipmentToPay((MapEnd From, MapEnd To, MapLinkKind Kind) bundle, MapEnd gate, MapEnd pay)
+        {
+            var (y, x, box) = (PortY(bundle, gate, MapSide.Left), LaneX(bundle), _grid.Slot(pay));
+            var into = box.Top + (MapLineWidths.ArrowHalf(_widths[bundle]) + EdgePixels) * _grid.DownPixel;
             return new MapRoute([new(_grid.Slot(gate).Left, y), new(x, y), new(x, into), new(box.Right, into)]);
         }
 
@@ -1070,6 +1090,7 @@ internal static class MapLayout
         {
             decimal? group = Family(bundle) switch
             {
+                RouteFamily.EquipmentToPay => -0.9m,
                 RouteFamily.RoyaltyToPay => 0m,
                 RouteFamily.GateToTaxes => 0.5m,
                 _ => null,
@@ -1168,6 +1189,7 @@ internal static class MapLayout
         CompanyYearToExpenses,
         BenefitToPay,
         RoyaltyToPay,
+        EquipmentToPay,
         Pay,
         Quotient,
         PayToTaxes,
@@ -1198,6 +1220,7 @@ internal enum MapRow
     Vouchers,
     Allowances,
     Rent,
+    Equipment,
     Car,
     Split,
     Royalty,

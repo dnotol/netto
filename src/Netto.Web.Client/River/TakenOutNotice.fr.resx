@@ -36,4 +36,7 @@
   <data name="TakenOut_Household" xml:space="preserve">
     <value>Votre ménage est retiré de votre plan&#160;: vous êtes imposé isolément, sans personne à charge. Vos valeurs sont conservées.</value>
   </data>
+  <data name="TakenOut_Equipment" xml:space="preserve">
+    <value>Informatique et téléphonie retirée de votre plan. Vos valeurs sont conservées.</value>
+  </data>
 </root>

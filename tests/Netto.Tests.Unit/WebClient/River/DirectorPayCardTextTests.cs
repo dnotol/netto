@@ -18,8 +18,10 @@ public class DirectorPayCardTextTests
     public void DirectorPayCardResx_everyLabelAndBubbleOfItsLines_hasAText()
     {
         var taxed = RiverInputs.Example.AddToPlan(OptionalModule.Car).WithCatalogueValue(50_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(8_000m)
-            .AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m).WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.0305m);
-        var lines = DirectorPayFigures.Taxed(taxed.Run().Pay.ShouldNotBeNull());
+            .AddToPlan(OptionalModule.Copyright).WithRoyalty(30_000m).WithContributionsPaidBy(ContributionsPaidBy.Company).WithFundFeeRate(0.0305m)
+            .AddToPlan(OptionalModule.Equipment).WithPcs(1);
+        var run = taxed.Run();
+        var lines = DirectorPayFigures.Taxed(run.Pay.ShouldNotBeNull(), run.Year);
 
         Resources.Missing(lines.SelectMany(line => new[] { line.Key, line.Help }).OfType<string>()).ShouldBeEmpty();
     }

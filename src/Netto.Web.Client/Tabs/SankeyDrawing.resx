@@ -18,8 +18,14 @@
   <data name="EarlierProfits" xml:space="preserve">
     <value>Profits kept from earlier years, after tax</value>
   </data>
-  <data name="Loop" xml:space="preserve">
+  <data name="Loop_Car" xml:space="preserve">
     <value>Your contribution to the car, {0}, goes back from your pocket to the company.</value>
+  </data>
+  <data name="Loop_Equipment" xml:space="preserve">
+    <value>Your contribution to the IT and phone, {0}, goes back from your pocket to the company.</value>
+  </data>
+  <data name="Loop_Both" xml:space="preserve">
+    <value>Your contributions to the car and to the IT and phone, {0}, go back from your pocket to the company.</value>
   </data>
   <data name="NoMoney" xml:space="preserve">
     <value>Tax bases, conditions and the household move no money: they are listed beside the card of the module chosen.</value>

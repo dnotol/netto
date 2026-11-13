@@ -75,7 +75,7 @@ public class PlanStorageTests
     // What the example holds none of is stored as the example's, as the builds before stored it: the
     // example as version 6 wrote it, with version 7's band of INASTI's company contribution, the default
     // lower one, after the financial year, its fund fee, none given, and version 8's partner, out of the plan and none, last,
-    // with version 9's partner assumed and no dependants, and version 10's car held all year, assumed.
+    // with version 9's partner assumed and no dependants, and version 10's car held all year, assumed, and no IT and phone, out of the plan, after the rent.
     [Fact]
     public void Store_example_writesWhatItHoldsNoneOfAsTheBuildBeforeDid()
     {
@@ -97,6 +97,18 @@ public class PlanStorageTests
             """));
         before["car"]!.AsObject().Add("heldFrom", JsonNode.Parse("""{"value":null,"origin":"Default"}"""));
         before["car"]!.AsObject().Add("returnedOn", JsonNode.Parse("""{"value":null,"origin":"Default"}"""));
+        var composition = before["composition"]!.AsObject();
+        composition.Insert(composition.IndexOf("rent") + 1, "equipment", false);
+        before.Insert(before.IndexOf("rent") + 1, "equipment", JsonNode.Parse(
+            """
+            {
+                "pcs": {"value": 0, "origin": "Example"}, "tablets": {"value": 0, "origin": "Example"}, "mobilePhones": {"value": 0, "origin": "Example"},
+                "internet": {"value": false, "origin": "Default"}, "phoneSubscriptions": {"value": 0, "origin": "Example"},
+                "yearlyCosts": {"value": 0, "origin": "Example"}, "contribution": {"value": 0, "origin": "Example"},
+                "privateCost": {"value": null, "origin": "Yours"}, "providedFrom": {"value": null, "origin": "Default"},
+                "returnedOn": {"value": null, "origin": "Default"}
+            }
+            """));
 
         PlanStorage.Store(StoredPlanDocuments.SavedExample).GetRawText().ShouldBe(before.ToJsonString());
     }
@@ -516,6 +528,9 @@ public class PlanStorageTests
     [InlineData(9, "car.heldFrom", 10)]
     [InlineData(9, "car.returnedOn", 10)]
     [InlineData(2, "car.heldFrom", 10)]
+    [InlineData(9, "composition.equipment", 10)]
+    [InlineData(9, "equipment", 10)]
+    [InlineData(1, "equipment", 10)]
     public void Read_documentOfAVersionWithAMemberALaterVersionBrought_makesThatPlanUnreadable(int version, string member, int broughtBy)
     {
         var brought = Member(PlanInputs(StoredPlanDocuments.Of(broughtBy), 1), member).DeepClone();
@@ -547,6 +562,10 @@ public class PlanStorageTests
     [InlineData(9, "household.dependants.singleParent")]
     [InlineData(10, "car.heldFrom")]
     [InlineData(10, "car.returnedOn")]
+    [InlineData(10, "composition.equipment")]
+    [InlineData(10, "equipment")]
+    [InlineData(10, "equipment.internet")]
+    [InlineData(10, "equipment.providedFrom")]
     [InlineData(1, "composition")]
     [InlineData(2, "composition")]
     [InlineData(2, "car")]
@@ -643,6 +662,34 @@ public class PlanStorageTests
         var today = PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans[0].Inputs.ShouldNotBeNull();
 
         (today.Reserve, today.Vouchers.MealVoucherDays).ShouldBe((new Input<decimal>(0m, InputOrigin.None), new Input<int>(0, InputOrigin.None)));
+    }
+
+    // Saved before the IT and phone, the plans of versions 1 to 9 hold none: out of the plan, no piece and nothing
+    // paid, as the example holds it.
+    [Theory]
+    [InlineData(1)]
+    [InlineData(9)]
+    public void Read_documentBeforeTheITAndPhone_holdsNoneInAnyPlan(int version)
+    {
+        var plans = PlanStorage.Read(StoredPlanDocuments.Of(version)).Book.Plans;
+
+        plans.ShouldSatisfyAllConditions(
+            () => plans.Count.ShouldBeGreaterThan(0),
+            () => plans.Select(plan => plan.Inputs?.InPlan(OptionalModule.Equipment)).ShouldAllBe(inPlan => inPlan == false),
+            () => plans.Select(plan => plan.Inputs?.Equipment).ShouldAllBe(set => set == RiverInputs.Example.Equipment));
+    }
+
+    // The IT and phone reads back as saved, in the plan or taken out of it: every piece, the internet connection,
+    // the costs, the contribution, the private cost and the days it is provided.
+    [Fact]
+    public void Read_written_givesBackTheITAndPhoneInThePlanOrOut()
+    {
+        var given = Equipment.EquipmentViewTests.Set.WithTablets(2).WithEquipmentContribution(20m).WithEquipmentPrivateCost(300m)
+            .WithEquipmentProvidedFrom(new DateOnly(2026, 3, 1)).WithEquipmentReturnedOn(new DateOnly(2026, 11, 30));
+        var takenOut = given.TakeOutOfPlan(OptionalModule.Equipment);
+
+        PlanStorage.Read(PlanStorage.Write(Book(("a", "Plan 1", given), ("b", "Plan 2", takenOut)))).Book.Plans.Select(plan => plan.Inputs)
+            .ShouldBe([given, takenOut]);
     }
 
     // Saved before the car, version 1's plans hold none: out of the plan, its values as version 2 stored the

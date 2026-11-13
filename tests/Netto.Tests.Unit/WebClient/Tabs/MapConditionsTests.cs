@@ -21,7 +21,7 @@ public class MapConditionsTests
     public static TheoryData<YearCondition, RiverModule, RiverModule> Kinds => new()
     {
         { new NoOfficeAllowanceBesideRent(1_380m, 0m), RiverModule.Allowances, RiverModule.Rent },
-        { new NoAllowanceBesideEquipment(1, true), RiverModule.Allowances, RiverModule.Rent },
+        { new NoAllowanceBesideEquipment(1, true), RiverModule.Allowances, RiverModule.Equipment },
         { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayNotMet, 51_000m, 40_000m, 60_000m), RiverModule.Split, RiverModule.CorporateTax },
         { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), RiverModule.Car, RiverModule.CorporateTax },
         { new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false), RiverModule.Copyright, RiverModule.Split },
@@ -199,4 +199,60 @@ public class MapConditionsTests
         MapConditions.From(conditions, EveryModule).Count.ShouldBe(conditions.Count);
     }
 
+    // The benefits' share of the pay (art. 215) is drawn from the module whose benefit the map shows: the car while
+    // it carries one, else the IT and phone while it carries one, else the car.
+    public static TheoryData<string, RiverModule> BenefitCarriers => new()
+    {
+        { "every lever", RiverModule.Car },
+        { "the car out of the plan", RiverModule.Equipment },
+        { "the car without a benefit", RiverModule.Equipment },
+        { "neither out of the plan", RiverModule.Car },
+    };
+
+    [Theory]
+    [MemberData(nameof(BenefitCarriers))]
+    public void BenefitsFrom_aPlan_isTheModuleCarryingTheBenefit(string plan, RiverModule expected)
+    {
+        var river = Carrying(plan);
+        var year = river.Run().Year.ShouldNotBeNull();
+
+        MapConditions.BenefitsFrom(year, MapView.ModulesOf(river)).ShouldBe(expected);
+    }
+
+    // With the IT and phone alone carrying a benefit, art. 215's 20% condition is drawn from it to Corporate tax.
+    [Fact]
+    public void Of_theITAndPhoneAlone_drawsTheBenefitsShareFromItToCorporateTax()
+    {
+        var river = Carrying("the car out of the plan");
+        var year = river.Run().Year.ShouldNotBeNull();
+
+        var links = MapConditions.Of(year, MapView.ModulesOf(river));
+
+        links.Where(link => link.To.Module == RiverModule.CorporateTax && link.From.Module != RiverModule.Split).Select(link => (link.From.Module, MapEffectText.Rule(link.From.Module!.Value, link.To.Module!.Value)))
+            .ShouldBe([(RiverModule.Equipment, "Rule_BenefitsWithinShareOfPay")]);
+    }
+
+    // A PC the company provides beside Expense allowances paying no flat computer allowance: the map draws the rule
+    // that keeps that allowance away, between Allowances and the IT and phone, worded in both languages.
+    [Fact]
+    public void Of_allowancesBesideAPcTheCompanyProvides_drawsTheRuleBetweenThem()
+    {
+        var river = MapLinksTests.Full.WithComputerAllowance(0m).WithPcs(1);
+        var year = river.Run().Year.ShouldNotBeNull();
+
+        var link = MapConditions.Of(year, MapView.ModulesOf(river)).Single(link => link.To.Module == RiverModule.Equipment);
+        var rule = MapEffectText.Rule(link.From.Module!.Value, link.To.Module!.Value);
+
+        (link.From.Module, link.Kind, rule, Resources.Get(rule) is not null, ResxText.French<MapTab>().Get(rule) is not null)
+            .ShouldBe((RiverModule.Allowances, MapLinkKind.Condition, "Rule_NoAllowanceBesideEquipment", true, true));
+    }
+
+    private static RiverInputs Carrying(string plan) => plan switch
+    {
+        "every lever" => MapLinksTests.Full,
+        "the car out of the plan" => MapLinksTests.Full.TakeOutOfPlan(OptionalModule.Car),
+        "the car without a benefit" => MapLinksTests.Full.WithCatalogueValue(0m),
+        "neither out of the plan" => MapLinksTests.Full.TakeOutOfPlan(OptionalModule.Car).TakeOutOfPlan(OptionalModule.Equipment),
+        _ => throw new ArgumentOutOfRangeException(nameof(plan), plan, null),
+    };
 }

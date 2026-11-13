@@ -36,11 +36,11 @@
   <data name="FromProfitAndEarlier" xml:space="preserve">
     <value>Out of {0} of profit before INASTI's company contribution and what the company pays you, and {1} kept from earlier years.</value>
   </data>
-  <data name="FromProfitWithCar" xml:space="preserve">
-    <value>Out of {0} of profit before INASTI's company contribution, its car's costs and what the company pays you.</value>
+  <data name="FromProfitWithExpenses" xml:space="preserve">
+    <value>Out of {0} of profit before the company's expenses, INASTI's company contribution among them, and what it pays you.</value>
   </data>
-  <data name="FromProfitWithCarAndEarlier" xml:space="preserve">
-    <value>Out of {0} of profit before INASTI's company contribution, its car's costs and what the company pays you, and {1} kept from earlier years.</value>
+  <data name="FromProfitWithExpensesAndEarlier" xml:space="preserve">
+    <value>Out of {0} of profit before the company's expenses, INASTI's company contribution among them, and what it pays you, and {1} kept from earlier years.</value>
   </data>
   <data name="FromPay" xml:space="preserve">
     <value>Out of {0} of gross pay.</value>

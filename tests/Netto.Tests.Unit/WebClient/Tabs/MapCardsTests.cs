@@ -38,8 +38,9 @@ public class MapCardsTests
     }
 
     // Each stretch of the company's line carries what the company has left at its top: every line into that
-    // point, the stretch above or Company year's line, and a car's contribution from the pocket, less every
-    // other line out of it, the lever's share across to its box or a car's costs into the expenses; the last,
+    // point, the stretch above or Company year's line, and a contribution from the pocket, less every
+    // other line out of it, the lever's share across to its box or the IT and phone's or a car's costs into the
+    // expenses; the last,
     // into the split, is what the split shares, the very amount « To share » says.
     [Theory]
     [MemberData(nameof(Rivers))]
@@ -102,7 +103,7 @@ public class MapCardsTests
     }
 
     // The levers the company's line runs past, each handing on one stretch of it.
-    private static readonly OptionalModule[] BeforeTheSplit = [OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Car];
+    private static readonly OptionalModule[] BeforeTheSplit = [OptionalModule.Vouchers, OptionalModule.Allowances, OptionalModule.Rent, OptionalModule.Equipment, OptionalModule.Car];
 
     // A stretch of the company's line: from the point beside a lever to the next one's, or into the split.
     private static bool StretchOfTheCompanysLine(MapEnd from, MapEnd to) => from.Lever is not null && (to.Lever is not null || to == MapEnd.Of(RiverModule.Split));

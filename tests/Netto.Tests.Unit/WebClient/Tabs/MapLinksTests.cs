@@ -2,6 +2,7 @@ using Netto.Core.CompanyCar;
 using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
+using Netto.Web.Client.River.Equipment;
 using Netto.Web.Client.Tabs;
 using Shouldly;
 
@@ -14,12 +15,15 @@ namespace Netto.Tests.WebClient.Tabs;
 public class MapLinksTests
 {
     // Every lever in the plan, each with figures: vouchers of every kind, the internet and computer
-    // allowances (an office allowance beside a rent is refused), a rent at the cap, a petrol car whose costs are not all deducted, its private fuel paid by the company
+    // allowances (an office allowance beside a rent is refused), a rent at the cap, a mobile phone with its
+    // subscription the company provides (a PC or internet beside those allowances is refused), its costs and a
+    // contribution, a petrol car whose costs are not all deducted, its private fuel paid by the company
     // and a contribution from the director, and a royalty of 30,000, beyond its limits.
     internal static readonly RiverInputs Full = PlanComposition.Modules.Aggregate(RiverInputs.Example, (inputs, module) => inputs.AddToPlan(module))
         .WithMealVoucherDays(220).WithEcoVouchers(250m).WithSportCultureVouchers(100m)
         .WithInternetAllowance(240m).WithComputerAllowance(240m)
         .WithCadastralIncome(1_200m).WithShareLet(0.12m).WithRent(1_380m)
+        .WithMobilePhones(1).WithPhoneSubscriptions(1).WithEquipmentCosts(900m).WithEquipmentContribution(20m)
         .WithCatalogueValue(45_000m).WithFirstRegistration(new DateOnly(2026, 1, 10)).WithCarCosts(9_000m)
         .WithCarEngine(CarEngine.Petrol).WithCarCo2(120).WithCarAcquired(new DateOnly(2026, 1, 5)).WithPrivateEnergyPaid(true).WithCarContribution(600m)
         .WithRoyalty(30_000m).WithPartner(true);
@@ -50,7 +54,8 @@ public class MapLinksTests
             ("company-year", "company-line-vouchers", RiverModule.CompanyYear, MapTabText.ProfitBeforeLevers),
             ("company-line-vouchers", "company-line-allowances", RiverModule.Vouchers, "Drain_left_after_vouchers"),
             ("company-line-allowances", "company-line-rent", RiverModule.Allowances, "Drain_left_after_allowances"),
-            ("company-line-rent", "company-line-car", RiverModule.Rent, "Drain_left_after_rent"),
+            ("company-line-rent", "company-line-equipment", RiverModule.Rent, "Drain_left_after_rent"),
+            ("company-line-equipment", "company-line-car", RiverModule.Equipment, "Drain_left_after_equipment"),
             ("company-line-car", "split", RiverModule.Car, "Drain_profit_before_pay_and_royalty")]);
     }
 
@@ -230,7 +235,7 @@ public class MapLinksTests
     }
 
     // What only changes a tax base: what the company cannot deduct of the vouchers, added back by
-    // Corporate tax; the car's benefit, taxed as the director's pay; what the company cannot deduct of
+    // Corporate tax; the IT and phone's benefit and the car's, taxed as the director's pay; what the company cannot deduct of
     // the car's costs, worded with the rate it deducts them at as the card words that line, and the share of
     // its benefit it adds back, both added back by Corporate tax; the marital quotient, from the director's
     // income to their partner with none of their own, the cap of 11,780.
@@ -244,10 +249,26 @@ public class MapLinksTests
 
         links.Select(link => (link.From.Module, link.To.Module, link.Carries.Text, link.Carries.Key, link.Amount)).ShouldBe([
             (RiverModule.Vouchers, RiverModule.CorporateTax, MapText.VoucherCard, VoucherFigures.AddedBack, run.Year.Vouchers.Disallowed),
+            (RiverModule.Equipment, RiverModule.DirectorPay, MapText.EquipmentCard, EquipmentFigures.BenefitTaxed, run.Year.Equipment.Benefit),
             (RiverModule.Car, RiverModule.DirectorPay, MapText.CarCard, CarFigures.BenefitTaxed, car.Benefit),
             (RiverModule.Car, RiverModule.CorporateTax, MapText.CarCard, "Figure_NotDeductible_Rate", car.NotDeductibleCosts),
             (RiverModule.Car, RiverModule.CorporateTax, MapText.CarCard, CarFigures.AddBack, car.AddBack),
             (RiverModule.DirectorPay, RiverModule.Household, MapText.HouseholdCard, HouseholdFigures.QuotientToPartner, 11_780m)]);
+    }
+
+    // The IT and phone takes no share of the company's line, as the car: its costs leave the line beside it into the
+    // expenses and the director's contribution joins it from the pocket, each its card's drain line, in its words.
+    [Fact]
+    public void Of_theITAndPhone_runsItsCostsIntoTheExpensesAndItsContributionFromThePocket()
+    {
+        var links = MapLinks.Of(Full, Full.Run());
+
+        links.Where(link => link.Card == RiverModule.Equipment && MapLinkStyle.IsMoney(link.Kind) && (link.From.Bucket ?? link.To.Bucket) is not null)
+            .Select(link => (link.From.Id, link.To.Id, link.Carries.Text, link.Carries.Key, link.Amount)).ShouldBe(
+            [
+                ("company-line-equipment", "expenses", MapText.DrainList, "Drain_equipment_costs", (decimal?)900m),
+                ("pocket", "company-line-equipment", MapText.DrainList, "Drain_equipment_contribution", 20m),
+            ]);
     }
 
     // The share of the car's benefit the company adds back is said at the rate its rules set, as the card

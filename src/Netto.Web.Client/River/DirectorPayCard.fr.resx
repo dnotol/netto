@@ -165,4 +165,10 @@
   <data name="SliderValue_Royalty" xml:space="preserve">
     <value>{0}, avec {1} de droits d'auteur</value>
   </data>
+  <data name="Figure_EquipmentBenefit" xml:space="preserve">
+    <value>Avantage de toute nature de l'informatique et téléphonie après votre intervention</value>
+  </data>
+  <data name="Help_EquipmentBenefit" xml:space="preserve">
+    <value>Votre rémunération est imposée avec l'avantage de toute nature forfaitaire de l'informatique et téléphonie que la société met à votre disposition, moins votre intervention pour son utilisation à des fins personnelles, bien que cet avantage ne soit jamais payé en espèces. La carte Informatique et téléphonie montre comment il est calculé.</value>
+  </data>
 </root>

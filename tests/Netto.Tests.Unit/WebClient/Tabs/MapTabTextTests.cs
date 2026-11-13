@@ -3,6 +3,7 @@ using Netto.Core.SocialContributions;
 using Netto.Web.Client.River;
 using Netto.Web.Client.River.CompanyCar;
 using Netto.Web.Client.River.Copyright;
+using Netto.Web.Client.River.Equipment;
 using Netto.Web.Client.Tabs;
 using Shouldly;
 
@@ -24,6 +25,7 @@ public class MapTabTextTests
         RiverModule.Vouchers => typeof(VoucherCard),
         RiverModule.Allowances => typeof(AllowanceCard),
         RiverModule.Rent => typeof(RentCard),
+        RiverModule.Equipment => typeof(EquipmentCard),
         RiverModule.Car => typeof(CarCard),
         RiverModule.Split => typeof(SharedCard),
         RiverModule.Copyright => typeof(CopyrightCard),

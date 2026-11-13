@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Informatique et téléphonie</value>
+  </data>
+  <data name="Summary_More" xml:space="preserve">
+    <value>{0} de plus dans votre poche</value>
+  </data>
+  <data name="Summary_Less" xml:space="preserve">
+    <value>{0} de moins dans votre poche</value>
+  </data>
+  <data name="Summary_None" xml:space="preserve">
+    <value>Aucune différence dans votre poche</value>
+  </data>
+  <data name="SummaryNoSet" xml:space="preserve">
+    <value>Rien de mis à disposition pour l'instant</value>
+  </data>
+  <data name="Hint" xml:space="preserve">
+    <value>Un PC, une tablette, un téléphone mobile, un abonnement de téléphonie ou une connexion internet que la société met à votre disposition et que vous utilisez aussi à titre privé. La société paie ce qu'ils coûtent sur son bénéfice, avant votre rémunération, et le déduit entièrement&#160;; vous êtes imposé sur un avantage de toute nature forfaitaire pour chacun, avec votre rémunération, bien qu'il ne soit jamais payé en espèces.</value>
+  </data>
+  <data name="Remove" xml:space="preserve">
+    <value>Retirer l'informatique et téléphonie de votre plan</value>
+  </data>
+  <data name="PcsLabel" xml:space="preserve">
+    <value>PC</value>
+  </data>
+  <data name="PcsHint" xml:space="preserve">
+    <value>Les ordinateurs fixes et portables que la société met à votre disposition, chacun évalué à 72&#160;€ par an. À côté de l'un d'eux, la société ne verse pas d'indemnité d'ordinateur.</value>
+  </data>
+  <data name="TabletsLabel" xml:space="preserve">
+    <value>Tablettes</value>
+  </data>
+  <data name="TabletsHint" xml:space="preserve">
+    <value>Les tablettes que la société met à votre disposition, chacune évaluée à 36&#160;€ par an. À côté de l'une d'elles, la société ne verse pas d'indemnité d'ordinateur.</value>
+  </data>
+  <data name="MobilePhonesLabel" xml:space="preserve">
+    <value>Téléphones mobiles</value>
+  </data>
+  <data name="MobilePhonesHint" xml:space="preserve">
+    <value>Les appareils que la société met à votre disposition, chacun évalué à 36&#160;€ par an&#160;; leurs abonnements se comptent à part.</value>
+  </data>
+  <data name="SubscriptionsLabel" xml:space="preserve">
+    <value>Abonnements de téléphonie</value>
+  </data>
+  <data name="SubscriptionsHint" xml:space="preserve">
+    <value>Les abonnements fixes ou mobiles au nom de la société, un par numéro de téléphone, de sorte que chaque carte SIM ayant son propre numéro compte, chacun évalué à 48&#160;€ par an.</value>
+  </data>
+  <data name="InternetLabel" xml:space="preserve">
+    <value>Connexion internet</value>
+  </data>
+  <data name="InternetHint" xml:space="preserve">
+    <value>Une connexion internet que la société met à votre disposition, fixe ou mobile, évaluée à 60&#160;€ par an une seule fois, quel que soit le nombre de connexions ou d'appareils qui les utilisent. À côté d'elle, la société ne verse pas d'indemnité d'internet.</value>
+  </data>
+  <data name="CostsLabel" xml:space="preserve">
+    <value>Leurs frais annuels</value>
+  </data>
+  <data name="CostsHint" xml:space="preserve">
+    <value>Tout ce que l'ensemble coûte à la société sur l'année&#160;: achat ou leasing, abonnements et connexion, tels que la société les supporte.</value>
+  </data>
+  <data name="ContributionLabel" xml:space="preserve">
+    <value>Votre intervention annuelle</value>
+  </data>
+  <data name="ContributionHint" xml:space="preserve">
+    <value>Ce que vous payez à la société pour l'utilisation de l'ensemble à des fins personnelles, le cas échéant. Elle vient en déduction de l'avantage, jamais au-delà.</value>
+  </data>
+  <data name="PeriodTitle" xml:space="preserve">
+    <value>Quand vous l'avez</value>
+  </data>
+  <data name="ProvidedFromLabel" xml:space="preserve">
+    <value>À votre disposition depuis le</value>
+  </data>
+  <data name="ProvidedFromHint" xml:space="preserve">
+    <value>Le premier jour où l'ensemble est à votre disposition, qui compte. Laissez-le vide si vous l'avez depuis le début de l'année ou avant.</value>
+  </data>
+  <data name="ReturnedOnLabel" xml:space="preserve">
+    <value>Restitué le</value>
+  </data>
+  <data name="ReturnedOnHint" xml:space="preserve">
+    <value>Le jour où vous restituez l'ensemble, qui ne compte pas. Laissez-le vide si vous le gardez au-delà de la fin de l'année.</value>
+  </data>
+  <data name="Period_AllYear" xml:space="preserve">
+    <value>toute l'année</value>
+  </data>
+  <data name="Period_ProvidedFrom" xml:space="preserve">
+    <value>à votre disposition depuis le {0}</value>
+  </data>
+  <data name="Period_ReturnedOn" xml:space="preserve">
+    <value>restitué le {0}</value>
+  </data>
+  <data name="NoSetYet" xml:space="preserve">
+    <value>Saisissez ce que la société met à votre disposition pour voir ses chiffres.</value>
+  </data>
+  <data name="Figure_Piece_Pc" xml:space="preserve">
+    <value>PC&#160;: {0} × {1}</value>
+  </data>
+  <data name="Figure_Piece_Tablet" xml:space="preserve">
+    <value>Tablettes&#160;: {0} × {1}</value>
+  </data>
+  <data name="Figure_Piece_MobilePhone" xml:space="preserve">
+    <value>Téléphones mobiles&#160;: {0} × {1}</value>
+  </data>
+  <data name="Figure_Piece_Internet" xml:space="preserve">
+    <value>Connexion internet</value>
+  </data>
+  <data name="Figure_Piece_PhoneSubscription" xml:space="preserve">
+    <value>Abonnements de téléphonie&#160;: {0} × {1}</value>
+  </data>
+  <data name="Figure_Piece_Pc_Days" xml:space="preserve">
+    <value>PC&#160;: {0} × {1}, pour {2} jours</value>
+  </data>
+  <data name="Figure_Piece_Tablet_Days" xml:space="preserve">
+    <value>Tablettes&#160;: {0} × {1}, pour {2} jours</value>
+  </data>
+  <data name="Figure_Piece_MobilePhone_Days" xml:space="preserve">
+    <value>Téléphones mobiles&#160;: {0} × {1}, pour {2} jours</value>
+  </data>
+  <data name="Figure_Piece_Internet_Days" xml:space="preserve">
+    <value>Connexion internet, pour {2} jours</value>
+  </data>
+  <data name="Figure_Piece_PhoneSubscription_Days" xml:space="preserve">
+    <value>Abonnements de téléphonie&#160;: {0} × {1}, pour {2} jours</value>
+  </data>
+  <data name="Help_PieceDays" xml:space="preserve">
+    <value>{0} par an, pris pour les jours où vous l'avez sur ceux de l'année, arrondi au cent pour chaque pièce.</value>
+  </data>
+  <data name="Figure_Benefit" xml:space="preserve">
+    <value>Avantage de toute nature de l'informatique et téléphonie avant votre intervention</value>
+  </data>
+  <data name="Figure_Contribution" xml:space="preserve">
+    <value>Votre intervention</value>
+  </data>
+  <data name="Figure_BenefitTaxed" xml:space="preserve">
+    <value>Avantage de toute nature de l'informatique et téléphonie après votre intervention</value>
+  </data>
+  <data name="Help_BenefitTaxed" xml:space="preserve">
+    <value>Il est imposé comme votre rémunération, bien qu'il ne soit jamais payé en espèces.</value>
+  </data>
+  <data name="Figure_WithEquipment" xml:space="preserve">
+    <value>Votre poche avec l'informatique et téléphonie</value>
+  </data>
+  <data name="Figure_WithoutEquipment" xml:space="preserve">
+    <value>Sans elle</value>
+  </data>
+  <data name="Figure_TaxesOnPay" xml:space="preserve">
+    <value>Cotisations et impôt qu'elle ajoute</value>
+  </data>
+  <data name="Help_TaxesOnPay" xml:space="preserve">
+    <value>Dans la carte Rémunération de dirigeant, où son avantage est imposé avec votre rémunération.</value>
+  </data>
+  <data name="PayHeld" xml:space="preserve">
+    <value>Les deux plans retiennent une rémunération de {0}, le maximum que la société peut payer une fois les frais de l'ensemble payés, si bien que la différence est due à l'ensemble seul.</value>
+  </data>
+  <data name="PrivateCostLabel" xml:space="preserve">
+    <value>Les mêmes choses en privé, par an</value>
+  </data>
+  <data name="PrivateCostHint" xml:space="preserve">
+    <value>Ce que les mêmes appareils, abonnements et connexion vous coûteraient sur l'année si vous les achetiez vous-même.</value>
+  </data>
+  <data name="Private_Waiting" xml:space="preserve">
+    <value>Saisissez-le pour comparer les deux.</value>
+  </data>
+  <data name="Private_Gain" xml:space="preserve">
+    <value>L'informatique et téléphonie de la société vous laisse {0} de plus que les acheter vous-même.</value>
+  </data>
+  <data name="Private_Loss" xml:space="preserve">
+    <value>L'informatique et téléphonie de la société vous coûte {0} de plus que les acheter vous-même.</value>
+  </data>
+  <data name="Private_Tie" xml:space="preserve">
+    <value>L'informatique et téléphonie de la société vous coûte autant que les acheter vous-même.</value>
+  </data>
+</root>

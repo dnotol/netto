@@ -1,0 +1,172 @@
+@using Netto.Core.Equipment
+@using Netto.Core.Rules
+@using Netto.Web.Client.River
+@inject IStringLocalizer<EquipmentCard> L
+
+@* A lever before the split, beside the car: the IT and phone the company provides the director for private use.
+   The user gives how many PCs, tablets, mobile phones and phone subscriptions, whether it provides an internet
+   connection, what the set costs the company a year and what they pay for its private use; the day the set is
+   provided from and the day it is given back on sit behind one disclosure, « When you have it », folded to a
+   line that states them, all year while neither is given. Its figures come first, as lines (EquipmentFigures),
+   each amount once: each kind's flat value, for the days provided when not the whole year, the benefit before
+   and after the contribution; then the plan with the set weighed in cash against the same plan without it, both
+   at the pay the plan with it runs at, which a note names once the pay set is held below, and, once the user
+   gives what the same things would cost them privately, the set against it, until then that this comparison
+   waits; then the costs paid into the company's expenses and the contribution coming back from the pocket.
+   The summary says what the set adds to the pocket or takes from it, the plan with it less the plan without
+   (LeverGain), and ends on no rate: what it pays out is its costs, a cost of the company. What Netto cannot see,
+   the user confirms in its conditions. An optional module: it shows only while in the plan, and the word at its
+   bottom takes it out, its values kept. The amounts are taken while typing and carry no Min or Max: the engine
+   refuses what the rules do not allow, and the card a negative private cost, which the engine never sees.
+   Skipped with the company. *@
+<ModuleCard Name="@ModuleFolds.Name(OptionalModule.Equipment)" Title="@L["Title"]" Summary="@Summary" Help="@L["Hint"]" Waiting="Inputs.Company is null"
+            Refused="@Refused" Sources="@(_view?.Details ?? [])" IncomeYear="Inputs.IncomeYear" RemoveLabel="@L["Remove"]" OnRemove="Remove">
+    <div class="equipment__fields">
+        <RiverField Label="@L["PcsLabel"]" For="river-equipment-pcs" Origin="Inputs.Equipment.Pcs.Origin" Help="@L["PcsHint"]">
+            <RiverNumericField T="int" InputId="river-equipment-pcs" Value="Inputs.Equipment.Pcs.Value" ValueChanged="OnPcsChanged" Format="0"
+                               Error="@(Refused?.Input == RefusedInput.EquipmentPcs)" Refusal="@Refused" />
+        </RiverField>
+        <RiverField Label="@L["TabletsLabel"]" For="river-equipment-tablets" Origin="Inputs.Equipment.Tablets.Origin" Help="@L["TabletsHint"]">
+            <RiverNumericField T="int" InputId="river-equipment-tablets" Value="Inputs.Equipment.Tablets.Value" ValueChanged="OnTabletsChanged" Format="0"
+                               Error="@(Refused?.Input == RefusedInput.EquipmentTablets)" Refusal="@Refused" />
+        </RiverField>
+        <RiverField Label="@L["MobilePhonesLabel"]" For="river-equipment-phones" Origin="Inputs.Equipment.MobilePhones.Origin" Help="@L["MobilePhonesHint"]">
+            <RiverNumericField T="int" InputId="river-equipment-phones" Value="Inputs.Equipment.MobilePhones.Value" ValueChanged="OnMobilePhonesChanged" Format="0"
+                               Error="@(Refused?.Input == RefusedInput.EquipmentMobilePhones)" Refusal="@Refused" />
+        </RiverField>
+        <RiverField Label="@L["SubscriptionsLabel"]" For="river-equipment-subscriptions" Origin="Inputs.Equipment.PhoneSubscriptions.Origin" Help="@L["SubscriptionsHint"]">
+            <RiverNumericField T="int" InputId="river-equipment-subscriptions" Value="Inputs.Equipment.PhoneSubscriptions.Value" ValueChanged="OnSubscriptionsChanged" Format="0"
+                               Error="@(Refused?.Input == RefusedInput.EquipmentPhoneSubscriptions)" Refusal="@Refused" />
+        </RiverField>
+    </div>
+    <div class="equipment__tick">
+        <MudCheckBox T="bool" Value="Inputs.Equipment.Internet.Value" ValueChanged="OnInternetChanged" Color="Color.Primary" UncheckedColor="Color.Default"
+                     Label="@L["InternetLabel"]" Error="@(Refused?.Input == RefusedInput.EquipmentInternet)" />
+        <OriginChip Origin="Inputs.Equipment.Internet.Origin" />
+        <InfoBubble Label="@L["InternetLabel"]">@L["InternetHint"]</InfoBubble>
+    </div>
+    <div class="equipment__fields">
+        <RiverField Label="@L["CostsLabel"]" For="river-equipment-costs" Origin="Inputs.Equipment.YearlyCosts.Origin" Help="@L["CostsHint"]">
+            <RiverNumericField T="decimal" InputId="river-equipment-costs" Value="Inputs.Equipment.YearlyCosts.Value" ValueChanged="OnCostsChanged" Euros="true"
+                               Error="@(Refused?.Input == RefusedInput.EquipmentYearlyCosts)" Refusal="@Refused" />
+        </RiverField>
+        <RiverField Label="@L["ContributionLabel"]" For="river-equipment-contribution" Origin="Inputs.Equipment.Contribution.Origin" Help="@L["ContributionHint"]">
+            <RiverNumericField T="decimal" InputId="river-equipment-contribution" Value="Inputs.Equipment.Contribution.Value" ValueChanged="OnContributionChanged" Euros="true"
+                               Error="@(Refused?.Input == RefusedInput.EquipmentContribution)" Refusal="@Refused" />
+        </RiverField>
+    </div>
+    <Disclosure Title="@L["PeriodTitle"]" Values="@SettingWords.Of(L, EquipmentPeriodView.Of(Inputs.Equipment))" Refused="@EquipmentPeriodView.Holds(Refused)">
+        <div class="equipment__fields">
+            <RiverField Label="@L["ProvidedFromLabel"]" For="@ProvidedFromId" Origin="Inputs.Equipment.ProvidedFrom.Origin" Help="@L["ProvidedFromHint"]">
+                <RiverDateField InputId="@ProvidedFromId" Date="@AsDate(Inputs.Equipment.ProvidedFrom.Value)" DateChanged="OnProvidedFromChanged"
+                                Error="@(Refused?.Input == RefusedInput.EquipmentProvidedFrom)" Refusal="@Refused" />
+            </RiverField>
+            <RiverField Label="@L["ReturnedOnLabel"]" For="@ReturnedOnId" Origin="Inputs.Equipment.ReturnedOn.Origin" Help="@L["ReturnedOnHint"]">
+                <RiverDateField InputId="@ReturnedOnId" Date="@AsDate(Inputs.Equipment.ReturnedOn.Value)" DateChanged="OnReturnedOnChanged"
+                                Error="@(Refused?.Input == RefusedInput.EquipmentReturnedOn)" Refusal="@Refused" />
+            </RiverField>
+        </div>
+    </Disclosure>
+    <RefusedMessage Error="@Refused" />
+    @if (_view is { HasSet: true } shown)
+    {
+        <FigureList Figures="@FigureWords.Of(L, EquipmentFigures.Benefit(shown.Result))" />
+        @if (_comparison is { } comparison)
+        {
+            <div class="equipment__comparison">
+                @if (comparison.PayHeld is { } pay)
+                {
+                    <p class="equipment__note">@L["PayHeld", Formats.Euros(pay)]</p>
+                }
+                <FigureList Figures="@FigureWords.Of(L, EquipmentFigures.Cash(comparison))" />
+                <div class="equipment__fields">
+                    <RiverField Label="@L["PrivateCostLabel"]" For="river-equipment-private-cost"
+                                Origin="@(Inputs.Equipment.PrivateCost.Value is null ? null : Inputs.Equipment.PrivateCost.Origin)" Help="@L["PrivateCostHint"]">
+                        <RiverNumericField T="decimal?" InputId="river-equipment-private-cost" Value="Inputs.Equipment.PrivateCost.Value" ValueChanged="OnPrivateCostChanged"
+                                           Euros="true"
+                                           Error="@(comparison.Refused is not null)" Refusal="@comparison.Refused" />
+                    </RiverField>
+                </div>
+                <RefusedMessage Error="@comparison.Refused" />
+                <p class="equipment__gap">@L[EquipmentCardText.Private(comparison), Formats.Euros(Math.Abs(comparison.AgainstPrivate ?? 0m)), Formats.Euros(comparison.PrivateCost ?? 0m)]</p>
+            </div>
+        }
+    }
+    else if (Refused is null)
+    {
+        <p class="equipment__note">@L["NoSetYet"]</p>
+    }
+    @if (_view is not null)
+    {
+        <DrainList Drains="_view.Drains" />
+    }
+    @if (_rules is not null)
+    {
+        <ConditionList Name="equipment-conditions" Conditions="_rules.Conditions" />
+    }
+</ModuleCard>
+
+@code {
+    [Parameter, EditorRequired]
+    public RiverInputs Inputs { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<RiverInputs> InputsChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public RiverRun Run { get; set; } = default!;
+
+    // The engine's refusal of an amount of the set.
+    [Parameter]
+    public Refusal? Refused { get; set; }
+
+    private const string ProvidedFromId = "river-equipment-provided-from";
+    private const string ReturnedOnId = "river-equipment-returned-on";
+
+    private EquipmentView? _view;
+    private EquipmentComparison? _comparison;
+    private EquipmentRules? _rules;
+    private readonly KeptLeverGain _kept = new(OptionalModule.Equipment);
+    private LeverGain? _gain;
+
+    protected override void OnParametersSet()
+    {
+        _view = Run.Year is { } year ? EquipmentView.From(year) : null;
+        _gain = _kept.For(Inputs, Run);
+        _comparison = EquipmentComparison.From(Inputs, Run, _gain);
+        _rules = EquipmentRules.For(Inputs.IncomeYear);
+    }
+
+    // What the set adds to the pocket or takes from it, or that there is no piece yet.
+    private string? Summary => _view is { } view && _gain is { } gain
+        ? L[EquipmentCardText.Summary(view.HasSet, gain.Gain), LeverGainText.Amount(gain.Gain)].Value
+        : null;
+
+    private static DateTime? AsDate(DateOnly? day) => day?.ToDateTime(TimeOnly.MinValue);
+
+    private static DateOnly? AsDay(DateTime? date) => date is { } picked ? DateOnly.FromDateTime(picked) : null;
+
+    private Task OnPcsChanged(int count) => InputsChanged.InvokeAsync(Inputs.WithPcs(count));
+
+    private Task OnTabletsChanged(int count) => InputsChanged.InvokeAsync(Inputs.WithTablets(count));
+
+    private Task OnMobilePhonesChanged(int count) => InputsChanged.InvokeAsync(Inputs.WithMobilePhones(count));
+
+    private Task OnSubscriptionsChanged(int count) => InputsChanged.InvokeAsync(Inputs.WithPhoneSubscriptions(count));
+
+    private Task OnInternetChanged(bool provided) => InputsChanged.InvokeAsync(Inputs.WithInternet(provided));
+
+    private Task OnCostsChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithEquipmentCosts(amount));
+
+    private Task OnContributionChanged(decimal amount) => InputsChanged.InvokeAsync(Inputs.WithEquipmentContribution(amount));
+
+    // Cleared, provided all year again. The engine refuses a span holding no day of the year.
+    private Task OnProvidedFromChanged(DateTime? date) => InputsChanged.InvokeAsync(Inputs.WithEquipmentProvidedFrom(AsDay(date)));
+
+    private Task OnReturnedOnChanged(DateTime? date) => InputsChanged.InvokeAsync(Inputs.WithEquipmentReturnedOn(AsDay(date)));
+
+    // Cleared, the private cost is none again.
+    private Task OnPrivateCostChanged(decimal? amount) => InputsChanged.InvokeAsync(Inputs.WithEquipmentPrivateCost(amount));
+
+    private Task Remove() => InputsChanged.InvokeAsync(Inputs.TakeOutOfPlan(OptionalModule.Equipment));
+}

@@ -117,4 +117,13 @@
   <data name="Costs_Household" xml:space="preserve">
     <value>{0} d'impôt en plus sur votre rémunération</value>
   </data>
+  <data name="Title_Equipment" xml:space="preserve">
+    <value>Informatique et téléphonie</value>
+  </data>
+  <data name="Description_Equipment" xml:space="preserve">
+    <value>Un PC, un téléphone ou une connexion internet que la société met à votre disposition</value>
+  </data>
+  <data name="Brings_Equipment" xml:space="preserve">
+    <value>{0} de frais d'informatique et téléphonie par an, payés par la société</value>
+  </data>
 </root>

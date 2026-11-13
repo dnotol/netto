@@ -23,8 +23,9 @@ internal static class MapEffectText
     public static string Rule(RiverModule from, RiverModule to) => (from, to) switch
     {
         (RiverModule.Allowances, RiverModule.Rent) => "Rule_NoOfficeAllowanceBesideRent",
+        (RiverModule.Allowances, RiverModule.Equipment) => "Rule_NoAllowanceBesideEquipment",
         (RiverModule.Split, RiverModule.CorporateTax) => "Rule_PayKeepsReducedRate",
-        (RiverModule.Car, RiverModule.CorporateTax) => "Rule_BenefitsWithinShareOfPay",
+        (RiverModule.Car or RiverModule.Equipment, RiverModule.CorporateTax) => "Rule_BenefitsWithinShareOfPay",
         (RiverModule.Copyright, RiverModule.Split) => "Rule_RoyaltyLowersPay",
         (RiverModule.Dividend, RiverModule.Split) => "Rule_PayOutCoversReserve",
         _ => throw new ArgumentOutOfRangeException(nameof(from), $"{from} to {to}", "No condition the map draws runs between these modules."),

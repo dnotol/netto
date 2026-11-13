@@ -4,6 +4,7 @@ using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
+using Netto.Core.Equipment;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
 using Netto.Core.Rules;
@@ -16,8 +17,8 @@ namespace Netto.Web.Client.River;
 
 // Everything the user describes in the river, each input with its origin, and the one run of the
 // year every card reads, so the river always adds up. Company is null once its figures are cleared:
-// the river then starts at the pay, and the vouchers, the expense allowances, the rent, the car and
-// the copyright royalty wait for it. Those five and the household are optional modules: the year counts one
+// the river then starts at the pay, and the vouchers, the expense allowances, the rent, the IT and phone,
+// the car and the copyright royalty wait for it. Those six and the household are optional modules: the year counts one
 // only while it is in the plan (Composition), and keeps its values while it is out, so adding it back
 // restores them; the household counts with the company skipped too, the pay taxed jointly with a partner
 // and the dependants' supplements on its tax-free amount. Public because
@@ -29,6 +30,7 @@ public sealed record RiverInputs(
     VoucherInputs Vouchers,
     AllowanceInputs Allowances,
     RentInputs Rent,
+    EquipmentInputs Equipment,
     CarInputs Car,
     CopyrightInputs Copyright,
     Input<bool> SmallCompany,
@@ -92,6 +94,9 @@ public sealed record RiverInputs(
         new VoucherInputs(new Input<int>(0, InputOrigin.None), ExampleNothing, ExampleNothing),
         new AllowanceInputs(ExampleNothing, ExampleNothing, ExampleNothing, ExampleNothing),
         new RentInputs(ExampleNothing, ExampleNothing, ExampleNothing),
+        new EquipmentInputs(
+            ExampleNoOne, ExampleNoOne, ExampleNoOne, new Input<bool>(false, InputOrigin.Default), ExampleNoOne, ExampleNothing, ExampleNothing,
+            EquipmentInputs.NoPrivateCost, EquipmentInputs.AllYear, EquipmentInputs.AllYear),
         new CarInputs(
             ExampleNothing, new Input<DateOnly>(new DateOnly(ExampleYear, 1, 1), InputOrigin.Example), ExampleNothing,
             new Input<bool>(false, InputOrigin.Default), ExampleNothing,
@@ -161,6 +166,30 @@ public sealed record RiverInputs(
     public RiverInputs WithShareLet(decimal share) => this with { Rent = Rent with { ShareLet = Yours(share) } };
 
     public RiverInputs WithRent(decimal amount) => this with { Rent = Rent with { Rent = Yours(amount) } };
+
+    public RiverInputs WithPcs(int count) => this with { Equipment = Equipment with { Pcs = Yours(count) } };
+
+    public RiverInputs WithTablets(int count) => this with { Equipment = Equipment with { Tablets = Yours(count) } };
+
+    public RiverInputs WithMobilePhones(int count) => this with { Equipment = Equipment with { MobilePhones = Yours(count) } };
+
+    public RiverInputs WithInternet(bool provided) => this with { Equipment = Equipment with { Internet = Yours(provided) } };
+
+    public RiverInputs WithPhoneSubscriptions(int count) => this with { Equipment = Equipment with { PhoneSubscriptions = Yours(count) } };
+
+    public RiverInputs WithEquipmentCosts(decimal amount) => this with { Equipment = Equipment with { YearlyCosts = Yours(amount) } };
+
+    public RiverInputs WithEquipmentContribution(decimal amount) => this with { Equipment = Equipment with { Contribution = Yours(amount) } };
+
+    // Cleared, none again.
+    public RiverInputs WithEquipmentPrivateCost(decimal? amount) => this with { Equipment = Equipment with { PrivateCost = Yours(amount) } };
+
+    // Cleared, provided all year again.
+    public RiverInputs WithEquipmentProvidedFrom(DateOnly? date) =>
+        this with { Equipment = Equipment with { ProvidedFrom = date is null ? EquipmentInputs.AllYear : Yours(date) } };
+
+    public RiverInputs WithEquipmentReturnedOn(DateOnly? date) =>
+        this with { Equipment = Equipment with { ReturnedOn = date is null ? EquipmentInputs.AllYear : Yours(date) } };
 
     public RiverInputs WithCatalogueValue(decimal amount) => this with { Car = Car with { CatalogueValue = Yours(amount) } };
 
@@ -330,6 +359,7 @@ public sealed record RiverInputs(
         OptionalModule.Vouchers => LeverKind.Vouchers,
         OptionalModule.Allowances => LeverKind.Allowances,
         OptionalModule.Rent => LeverKind.Rent,
+        OptionalModule.Equipment => LeverKind.Equipment,
         OptionalModule.Car => LeverKind.Car,
         OptionalModule.Copyright => LeverKind.Copyright,
         OptionalModule.Household => null,
@@ -368,6 +398,7 @@ public sealed record RiverInputs(
         Vouchers = InPlan(OptionalModule.Vouchers) ? Vouchers.Values : VoucherGrants.None,
         Allowances = InPlan(OptionalModule.Allowances) ? Allowances.Values : ExpenseAllowances.None,
         Rent = InPlan(OptionalModule.Rent) ? Rent.Values : HomeOfficeRent.None,
+        Equipment = InPlan(OptionalModule.Equipment) ? Equipment.Values : EquipmentFacts.None,
         Car = InPlan(OptionalModule.Car) ? Car.Values : CarFacts.None,
         Copyright = InPlan(OptionalModule.Copyright) ? Copyright.Values : CopyrightRoyalty.None,
         Household = HouseholdFacts,
@@ -432,6 +463,36 @@ public sealed record AllowanceInputs(Input<decimal> Office, Input<decimal> Inter
 public sealed record RentInputs(Input<decimal> CadastralIncome, Input<decimal> ShareLet, Input<decimal> Rent)
 {
     public HomeOfficeRent Values => new(CadastralIncome.Value, ShareLet.Value, Rent.Value);
+}
+
+// The IT and phone the company provides: how many PCs, tablets, mobile phones and phone subscriptions, none
+// until given, whether it provides an internet connection, not unless said, what the set costs it a year and
+// what the director pays for its private use, nothing until given, the day it is provided from and the day it
+// is given back on, the whole year until a date is given, and what the same things would cost privately, none
+// until given, which no rule reads.
+public sealed record EquipmentInputs(
+    Input<int> Pcs,
+    Input<int> Tablets,
+    Input<int> MobilePhones,
+    Input<bool> Internet,
+    Input<int> PhoneSubscriptions,
+    Input<decimal> YearlyCosts,
+    Input<decimal> Contribution,
+    Input<decimal?> PrivateCost,
+    Input<DateOnly?> ProvidedFrom,
+    Input<DateOnly?> ReturnedOn)
+{
+    // No default and no example: none until the user gives it, its origin, the user's, shown only once given.
+    public static Input<decimal?> NoPrivateCost { get; } = new(null, InputOrigin.Yours);
+
+    // No date the set is provided from or given back on: all year, a status assumed until a date is given.
+    public static Input<DateOnly?> AllYear { get; } = new(null, InputOrigin.Default);
+
+    public EquipmentFacts Values => new(Pcs.Value, Tablets.Value, MobilePhones.Value, Internet.Value, PhoneSubscriptions.Value, YearlyCosts.Value, Contribution.Value)
+    {
+        ProvidedFrom = ProvidedFrom.Value,
+        ReturnedOn = ReturnedOn.Value,
+    };
 }
 
 // The car the company puts at the director's disposal as the user enters it: its catalogue value, the

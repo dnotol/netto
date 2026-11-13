@@ -54,7 +54,7 @@ public class MapTabTests
 
         html.ShouldSatisfyAllConditions(
             () => Regex.Matches(html, "<button type=\"button\" class=\"map-module map-module--gate[^\"]*\"[^>]*data-module=\"([a-z-]+)\"").Select(match => match.Groups[1].Value)
-                .ShouldBe(["vouchers", "allowances", "rent", "car", "copyright", "dividend"]),
+                .ShouldBe(["vouchers", "allowances", "rent", "equipment", "car", "copyright", "dividend"]),
             () => GateLines(html).ShouldBe(gates.Gates.SelectMany(gate => gate.Lines.Select(line => (MapModules.Name(gate.Module), GateWords(line))))));
     }
 
