@@ -7,7 +7,7 @@ namespace Netto.Tests.WebClient.Pages;
 
 // The plan page measuring the ideas as the browser runs it (LivePlan), its paint held until the test lets the
 // browser paint: once the Optimiser has searched the plan on screen, the ideas are measured, one per paint,
-// for the Ideas view, its badge and My plan's nudge; a trial changes the river only once kept, through the
+// for the Ideas view and its badge; a trial changes the river only once kept, through the
 // page's one edit. When the ideas search is PistesSourceTests'; their figures PisteSearchTests'.
 public class PlanPistesTests
 {
@@ -23,8 +23,8 @@ public class PlanPistesTests
         (bar.Badges[PlanTab.Pistes].Single(), page.Errors.Count).ShouldBe((new TabBadge(TabBadgeKind.PistesSearching), 0));
     }
 
-    // Painted, the vouchers are measured and the rent and the royalty ask: the badge and the nudge say one
-    // priced, two asking.
+    // Painted, the vouchers are measured and the rent and the royalty ask: the badge says one priced, two
+    // asking.
     [Fact]
     public async Task Plan_painted_countsTheIdeasPricedAndAsking()
     {
@@ -34,10 +34,8 @@ public class PlanPistesTests
         await page.PaintAsync();
 
         var bar = await page.FindAsync<PlanTabBar>();
-        var nudges = await page.FindAsync<PlanNudges>();
         page.ShouldSatisfyAllConditions(
             () => bar.Badges[PlanTab.Pistes].Single().ShouldBe(new TabBadge(TabBadgeKind.Pistes, Count: 1, Questions: 2)),
-            () => nudges.Pistes.ShouldBe(new PistesCount(1, 2)),
             () => page.Errors.ShouldBeEmpty());
     }
 

@@ -51,10 +51,8 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Compare plans (the Plans panel's button and its comparison) · Back to plans | Comparer les plans · Retour aux plans |
 | next advance payment by {date} (the link to When to pay beside Optimise's tab, spoken after « When to pay: ») | Quand payer : prochain versement anticipé au plus tard le {date} (non-breaking space before the colon) |
 | what the fund bills is refused (the same link, spoken) | Quand payer : le montant facturé par votre caisse est refusé |
-| Optimise can add {amount} without changing anything else (My plan's nudge) | Optimiser peut ajouter {amount} sans rien changer d'autre |
-| Ideas: {n} priced, {m} questions (My plan's nudge; the badge shows « {n} · {m}? » and says the counts alone; a count of zero is left out) | Pistes : {n} chiffrée(s), {m} question(s) (agreement by key, one or many; a count of zero is left out) |
 | page titles: My plan · Optimise · Ideas, each followed by « : Netto » | Mon plan · Optimiser · Pistes, each followed by « : Netto » (non-breaking space before the colon) |
-| Your plans · Save this plan · Add to plan | Vos plans · Enregistrer ce plan · Ajouter au plan |
+| Your plans · Save this plan · Edit plan (the button over the map that adds and removes optional modules) | Vos plans · Enregistrer ce plan · Modifier le plan |
 | Today (the starred plan) | Aujourd'hui (a name, capitalised: « de plus qu'Aujourd'hui ») |
 | the river (the plan on screen) | not translated as a metaphor: « le plan », « le plan affiché » |
 | a move (Optimise) | un ajustement |

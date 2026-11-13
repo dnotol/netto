@@ -38,8 +38,7 @@
    beside them, where it is edited (MapTab); Optimise, the moves Netto proposes from the plan on screen,
    retuning only the levers it holds, then when the plan's payments fall, a section named by a query,
    ?show=when (OptimisationTab, WhenToPaySection); and Ideas, what could be added (Pistes). My plan
-   suggests nothing: the other two appear in it only as the tabs' badges and one line of nudges
-   (PlanNudges). Comparing two saved plans is a mode of the Plans panel, in the band. Each view has its own
+   suggests nothing: the other two appear in it only as the tabs' badges. Comparing two saved plans is a mode of the Plans panel, in the band. Each view has its own
    URL (PlanTabRoutes) but they are this one page, so the river's inputs, its run, what the page found and
    the module chosen stay as they are from one view to the next, and Blazor keeps the page when the view
    changes: the view is a parameter of the route, the section, the card and the Plans panel's mode queries.
@@ -49,14 +48,14 @@
    The river: the year from the company's revenue to the director's pocket, as modules that each edit their
    part of one scenario on their card and draw their view of one run. Every figure comes from Netto.Core;
    the page only holds the inputs and runs them. The optional modules are on the map only while in the
-   plan, which « Add to plan » sets, among the map's tools (CompositionMenu, which the page hands the map,
+   plan, which « Edit plan » sets, among the map's tools (CompositionMenu, which the page hands the map,
    so that it keeps hold of it); taking one out, there or from its card, shows a notice with Undo, which
    outlives a switch of tab, and adding one chooses it, so its card opens beside the map to be filled. The
    choice on the map, a module or a bucket (MapChoice), is Company year on arriving, or the one the address
    names (CardLinks, plan?card=<name>), from a link of the Optimise view's moves or loaded as it is, or the
    bucket the viewer presses in the band, from any view, which brings them to My plan. *@
-@* The moves and the ideas found for the plan on screen, each built once per draw, for the badges, My plan's
-   nudges and the views alike. *@
+@* The moves and the ideas found for the plan on screen, each built once per draw, for the badges
+   and the views alike. *@
 @{
     var moves = _moves.View(Today);
     var pistes = _pistes.View(Today);
@@ -81,7 +80,6 @@
                 @* My plan's head, the page's one h1 there, is drawn by the page, so that a change of what its content draws
                    keeps the focus where the viewer is and only arriving at the view moves it to the title (TabHead). *@
                 <TabHead Title="@L[PlanText.MyPlanTitle]" Focus="@(!PlanTabRoutes.OpensCompare(PlansMode))" />
-                <PlanNudges Gain="NudgeGain(moves)" Pistes="PistesFound(pistes)" />
                 <MapTab Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" RefusedBy="Refused" Chosen="_mapChosen" ChosenChanged="OnMapChosen" ViewerChose="_viewerChose">
                     <AddToPlan>
                         <CompositionMenu @ref="_composition" Inputs="_inputs" InputsChanged="OnInputsChanged" Run="_run" />
@@ -159,7 +157,7 @@
     private SplitSearchResult? _search;
     private (string Id, RiverRun Run)? _today;
     private RiverInputs? _searched;
-    // « Add to plan », while My plan draws the map: a reference Blazor keeps once the map has gone, so it is
+    // « Edit plan », while My plan draws the map: a reference Blazor keeps once the map has gone, so it is
     // read there alone (AddToPlan).
     private CompositionMenu? _composition;
     // The Optimise view, while it is drawn: a reference Blazor keeps once it has gone, read only on Optimise.
@@ -308,7 +306,7 @@
     // focus is asked for here too (the address of another view brings it by arrival).
     private void OnDeadlineChosen() => _focusCalendar = true;
 
-    // Undo and Dismiss leave with the notice, so the focus goes where the plan's modules are set, « Add to
+    // Undo and Dismiss leave with the notice, so the focus goes where the plan's modules are set, « Edit
     // plan », or to the start of the view's content where it is not drawn (RemovalNoticeFocus).
     private void Undo()
     {
@@ -368,25 +366,21 @@
     }
 
     // What each tab says after its name, from what its content draws: the Optimise view's moves, which
-    // its badge and My plan's nudge need on every view, found once per plan on screen and date (MovesSource),
+    // its badge needs on every view, found once per plan on screen and date (MovesSource),
     // since the search runs the split at every move, and only after the page has painted: until then the
     // badge says they are being looked for. My plan's own says only that the plan is refused.
     // The Ideas badge says « … » while an idea is still measured, as Optimise's does for the moves.
     private IReadOnlyDictionary<PlanTab, IReadOnlyList<TabBadge>> Badges(MovesView moves, CalendarView? calendar, PistesView pistes) =>
         TabBadges.Of(_run, moves, calendar, PistesFound(pistes), pistes.Searching);
 
-    // The ideas found for the plan on screen, for the Ideas badge and My plan's nudge: how many are priced and
+    // The ideas found for the plan on screen, for the Ideas badge: how many are priced and
     // how many still ask, none while one is still measured, so no count changes once it is found.
     private static PistesCount? PistesFound(PistesView view) => view is { Searching: false } ? new PistesCount(view.Priced, view.Questions) : null;
-
-    // What the moves add to the plan on screen, for My plan's nudge: the Optimisation badge's own amount, so
-    // none while they are looked for or there are none.
-    private static decimal? NudgeGain(MovesView moves) => moves is { State: MovesState.Moves } ? moves.Total : null;
 
     // Whether the map, and its tools, are what the page draws: My plan.
     private bool OnTheMap => _tab == PlanTab.Plan;
 
-    // « Add to plan » as the map draws it, none anywhere else.
+    // « Edit plan » as the map draws it, none anywhere else.
     private CompositionMenu? AddToPlan => OnTheMap ? _composition : null;
 
     // The browser's date, which decides which deadlines are past and which one a payment is proposed by.

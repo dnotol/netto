@@ -134,7 +134,7 @@ public class PlanPageTests
 
     // My plan is the map, the card of the module chosen beside it, Company year on arriving, and the two
     // notes on what Netto assumes and does not count yet under it; the moves and the calendar are Optimise's.
-    // Under the head come the nudges and the map: no lens, no calendar.
+    // Under the head comes the map: no lens, no calendar.
     [Fact]
     public async Task Plan_onMyPlan_showsTheMapCompanyYearsCardAndTheNotesWithNoLensNorCalendar()
     {
@@ -309,14 +309,15 @@ public class PlanPageTests
         Links(html).Where(link => link.Name != "My plan" && link.Name != "Optimise").Select(link => link.Badge).ShouldBe(["…"]);
     }
 
-    // The one line of nudges is drawn only when it has something to say: on first draw the moves are still
-    // being looked for and nothing supplies ideas, so none.
+    // My plan shows the plan alone: nothing stands between its title and the map, not a line pointing at the
+    // other view, whatever the moves found.
     [Fact]
-    public async Task Plan_onMyPlanFirstDraw_drawsNoNudgeYet()
+    public async Task Plan_onMyPlan_drawsNothingBetweenItsTitleAndTheMap()
     {
         var html = await RenderPlanAsync(new Folds(new BrowserStorage()));
 
-        html.ShouldNotContain("plan-nudges");
+        var between = Regex.Match(html, "<h1[^>]*>.*?</h1>(.*?)<div class=\"map-tab\"", RegexOptions.Singleline).Groups[1].Value;
+        Regex.Replace(between, @"<!--.*?-->|</\w+>|\s+", "").ShouldBeEmpty();
     }
 
     // Plans opens on its comparison where the address asks (plan?plans=compare), the panel closed otherwise.

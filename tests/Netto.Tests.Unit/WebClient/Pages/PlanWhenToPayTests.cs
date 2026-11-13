@@ -165,19 +165,4 @@ public class PlanWhenToPayTests
 
         page.Navigations.ShouldBeEmpty();
     }
-
-    // Once the moves are found, the line of nudges says what Optimise can add, as a link, and once the ideas are
-    // measured how many are priced and how many ask: the vouchers priced, the rent and the royalty asking.
-    [Fact]
-    public async Task Plan_movesFound_nudgeToOptimiseAndToIdeas()
-    {
-        await using var page = LivePlan.At("http://localhost/plan", new BrowserStorage(), holdPaint: true);
-        await page.LoadAsync();
-        var gainBefore = (await page.FindAsync<PlanNudges>()).Gain;
-
-        await page.PaintAsync();
-
-        var nudges = await page.FindAsync<PlanNudges>();
-        (gainBefore, nudges.Gain > 0m, nudges.Pistes).ShouldBe((null, true, new PistesCount(1, 2)));
-    }
 }

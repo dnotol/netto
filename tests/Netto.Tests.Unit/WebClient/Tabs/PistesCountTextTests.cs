@@ -4,7 +4,7 @@ using Shouldly;
 namespace Netto.Tests.WebClient.Tabs;
 
 // How the ideas' counts are said, in the badge short and in words: only the counts that are not zero, each
-// agreeing with its number (PlanTabBarPistesBadgeTests and PlanNudgesTests say them on screen).
+// agreeing with its number (PlanTabBarPistesBadgeTests says them on screen).
 public class PistesCountTextTests
 {
     [Theory]
@@ -32,13 +32,13 @@ public class PistesCountTextTests
         PistesCountText.Questions(count).ShouldBe(key);
     }
 
-    // Both components that say the counts hold the four words, in both languages.
+    // The component that says the counts holds the four words, in both languages.
     [Fact]
-    public void Resx_ofTheBarAndTheNudges_holdEveryCountWord()
+    public void Resx_ofTheBar_holdEveryCountWord()
     {
         var keys = new[] { PistesCountText.Priced(1), PistesCountText.Priced(2), PistesCountText.Questions(1), PistesCountText.Questions(2) };
 
-        new[] { ResxText.For<PlanTabBar>(), ResxText.French<PlanTabBar>(), ResxText.For<PlanNudges>(), ResxText.French<PlanNudges>() }
+        new[] { ResxText.For<PlanTabBar>(), ResxText.French<PlanTabBar>() }
             .SelectMany(texts => keys.Where(key => texts.Get(key) is null))
             .ShouldBeEmpty();
     }
