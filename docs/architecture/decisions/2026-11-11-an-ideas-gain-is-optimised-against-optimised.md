@@ -2,7 +2,8 @@
 type: adr
 title: An idea is a lever not in the plan, its gain the optimised plan with it less the optimised plan without it
 description: PisteSearch runs MoveSearch once with the lever and sets it against the Optimiser's plan; ideas are the levers whose cash gain the engine measures (vouchers, rent, royalty); each asks first what Netto cannot see; a trial lives in the Ideas view until kept.
-status: stable
+status: deprecated
+superseded_by: /2026-11-13-two-views-and-levers-are-found-in-edit-plan.md
 accepted_by: human:Johnny Amadeus
 decided: 2026-11-11
 tags: [search, site]

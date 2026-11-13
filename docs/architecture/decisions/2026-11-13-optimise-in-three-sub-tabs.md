@@ -2,7 +2,8 @@
 type: adr
 title: Optimise is three sub-tabs under one head line, each with its address
 description: The moves, the pay curve and When to pay are sub-tabs of the Optimise view at /plan/optimisation, ?show=pay and ?show=when, links in a nav, only the chosen one drawn, under a head line common to the three; a move is a compact row with its why behind a toggle.
-status: draft
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-13
 tags: [site]
 sources:

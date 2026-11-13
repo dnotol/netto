@@ -2,7 +2,8 @@
 type: adr
 title: The plan page has two views, and a lever is found in « Edit plan »
 description: My plan and Optimise are the PlanTab values; the Ideas view, its trial and PisteSearch go; a lever not in the plan is found and added in the panel over the map, its card says its gain once added, and Optimise retunes; My plan shows no line of nudges.
-status: draft
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-13
 tags: [site, search]
 sources:
