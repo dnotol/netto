@@ -81,7 +81,7 @@
                 var badge = Badge(section);
                 <li>
                     <a href="@OptimiseSections.Href(section)" class="optimise__section" aria-current="@(section == Section ? "page" : null)"
-                       @onclick="@(() => ChooseAsync(section))">
+                       @onclick="@(click => ChooseAsync(section, click))">
                         <span>@L[OptimisationTabText.Section(section)]</span>
                         @if (badge is { } shown)
                         {
@@ -251,10 +251,13 @@
     }
 
     // A sub-tab chosen in the row: Blazor runs this before it follows the link's address, so the page knows
-    // the arrival is the viewer's click and leaves the focus on the link. The one shown changes nothing.
-    private async Task ChooseAsync(OptimiseSection section)
+    // the arrival is the viewer's click and leaves the focus on the link. The one shown changes nothing, and nor
+    // does a click Blazor follows no address for, the browser opening the link elsewhere: a modifier held or
+    // another button than the primary one.
+    private async Task ChooseAsync(OptimiseSection section, MouseEventArgs click)
     {
-        if (section != Section)
+        var plain = click is { Button: 0, CtrlKey: false, MetaKey: false, ShiftKey: false, AltKey: false };
+        if (plain && section != Section)
             await SectionChosen.InvokeAsync(section);
     }
 

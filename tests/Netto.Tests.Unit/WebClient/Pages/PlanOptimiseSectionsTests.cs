@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Web;
 using Netto.Web.Client.River;
 using Netto.Web.Client.Tabs;
 using Shouldly;
@@ -127,6 +128,31 @@ public class PlanOptimiseSectionsTests
         var before = page.Focuses;
 
         await page.GoToAsync(Moves, "optimisation");
+
+        (page.Focuses - before, page.Errors.Count).ShouldBe((1, 0));
+    }
+
+    // A click that opens the sub-tab in another browser tab, a modifier held or another button, follows nothing
+    // here: the next arrival, by the badge or Back, still brings the focus.
+    public static TheoryData<string, MouseEventArgs> ClicksElsewhere => new()
+    {
+        { "ctrl", new MouseEventArgs { CtrlKey = true } },
+        { "meta", new MouseEventArgs { MetaKey = true } },
+        { "shift", new MouseEventArgs { ShiftKey = true } },
+        { "alt", new MouseEventArgs { AltKey = true } },
+        { "middle button", new MouseEventArgs { Button = 1 } },
+    };
+
+    [Theory]
+    [MemberData(nameof(ClicksElsewhere))]
+    public async Task Plan_subTabOpenedElsewhere_leavesTheNextArrivalItsFocus(string _, MouseEventArgs click)
+    {
+        await using var page = LivePlan.At(Moves, new BrowserStorage());
+        await page.LoadAsync("optimisation");
+        await page.SendTogetherAsync(("href", OptimiseSections.Href(OptimiseSection.Pay), "onclick", click));
+        var before = page.Focuses;
+
+        await page.GoToAsync(When, "optimisation");
 
         (page.Focuses - before, page.Errors.Count).ShouldBe((1, 0));
     }
