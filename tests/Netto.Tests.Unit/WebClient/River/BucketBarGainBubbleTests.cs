@@ -8,8 +8,8 @@ namespace Netto.Tests.WebClient.River;
 
 // The band's gain, what the river leaves in the pocket against the plan starred Today, sits on the pocket's
 // name line, short (« +€2,551.13 vs Today »), so it takes no line of its own, and says what it is measured by
-// in a bubble beside it: the sentence of River/ObjectiveNote (ObjectiveNoteTests), the same as the Optimisation
-// tab says under its figures (OptimisationObjectiveTests). It sits outside the live region, which says the
+// in a bubble beside it: the sentence of River/ObjectiveNote (ObjectiveNoteTests), the measure the Optimisation
+// tab says, shorter, in its head's state line (OptimisationObjectiveTests). It sits outside the live region, which says the
 // pocket and the gain in full and nothing else.
 public class BucketBarGainBubbleTests
 {

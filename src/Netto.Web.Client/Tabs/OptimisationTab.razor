@@ -12,8 +12,9 @@
    head is common to the three: one line, what the plan leaves in the pocket, what it leaves with every move and
    the difference, a description list so each figure keeps its label for a screen reader (the arrow between the
    first two is the stylesheet's, said by nobody), with « Apply all » at its end while there are moves; then the
-   state line, which takes the focus once a move is applied, from any sub-tab; then what the figures are measured
-   by, one sentence in sight (ObjectiveNote, which the bar's gain says in a bubble).
+   state line, one muted sentence, which takes the focus once a move is applied, from any sub-tab. With moves
+   found, it says what the figures are measured by and what they leave out, in sight on every sub-tab: no other
+   paragraph stands under the head's line (the bar's gain says ObjectiveNote's sentence in a bubble).
 
    Then the row of sub-tabs, links in a nav, as the band's views are: each is an address (OptimiseSections, the
    page reading the show query), so Back and Forward walk them; the chosen one says so (aria-current="page").
@@ -68,10 +69,6 @@
         @* Where the focus goes once a move is applied, from any sub-tab: the line that then says the moves are
            looked for again. *@
         <p class="moves__state" tabindex="-1" @ref="_state">@L[OptimisationTabText.State(_view.State)]</p>
-        @if (_view.State is MovesState.Moves or MovesState.AlreadyBest)
-        {
-            <p class="moves__objective"><ObjectiveNote /></p>
-        }
     </div>
 
     <nav class="optimise__sections" aria-label="@L[OptimisationTabText.SectionsLabel]">

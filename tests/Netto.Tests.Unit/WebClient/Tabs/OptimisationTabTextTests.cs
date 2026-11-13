@@ -42,13 +42,13 @@ public class OptimisationTabTextTests
             .ShouldBe(["Your plan", "optimised", "Certain gain"]);
     }
 
-    // The head's state line says what the moves are measured from and what they touch; that they come one on
-    // top of the other is said once, above the list.
+    // The head's state line says what the moves are measured by, with the levers they touch, and what they leave
+    // out; that they come one on top of the other is said once, above the list.
     [Fact]
     public void State_moves_saysTheyAreMeasuredFromThePlanOnScreenAndRetuneOnlyItsLevers()
     {
         (Resources.Get(OptimisationTabText.State(MovesState.Moves)), Resources.Get(OptimisationTabText.Stacked)).ShouldBe((
-            "Measured from the plan on screen. Netto only retunes the levers already in your plan, with the facts you gave.",
+            "Measured in cash in your pocket this year, with the levers already in your plan; pension accrual and profit kept in the company are not weighed.",
             "Each adjustment counts on top of the ones above it."));
     }
 

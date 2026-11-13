@@ -135,14 +135,14 @@ public class OptimisationTabTests
         html.Contains('→').ShouldBeFalse();
     }
 
-    // The head says what the moves are measured from and what they touch; the list, once, that they stack.
+    // The head says what the moves are measured by and leave out; the list, once, that they stack.
     [Fact]
-    public async Task Optimisation_withMoves_saysTheyAreMeasuredFromThePlanOnScreenThenThatTheyStack()
+    public async Task Optimisation_withMoves_saysWhatTheyAreMeasuredByThenThatTheyStack()
     {
         var html = await RenderTabAsync(RiverInputs.Example);
 
         (StateParagraphs(html).Single(), Paragraph(html, "moves__stacked"), html.IndexOf("moves__stacked", StringComparison.Ordinal) < html.IndexOf("<ol", StringComparison.Ordinal))
-            .ShouldBe(("Measured from the plan on screen. Netto only retunes the levers already in your plan, with the facts you gave.",
+            .ShouldBe(("Measured in cash in your pocket this year, with the levers already in your plan; pension accrual and profit kept in the company are not weighed.",
                 "Each adjustment counts on top of the ones above it.", true));
     }
 

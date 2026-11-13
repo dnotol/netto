@@ -25,7 +25,7 @@
     <value>Your plan is already the best Netto finds with the facts you gave.</value>
   </data>
   <data name="State_Moves" xml:space="preserve">
-    <value>Measured from the plan on screen. Netto only retunes the levers already in your plan, with the facts you gave.</value>
+    <value>Measured in cash in your pocket this year, with the levers already in your plan; pension accrual and profit kept in the company are not weighed.</value>
   </data>
   <data name="Move_Pay" xml:space="preserve">
     <value>Pay yourself {0} instead of {1}</value>

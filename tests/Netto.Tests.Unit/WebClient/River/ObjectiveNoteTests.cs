@@ -48,16 +48,17 @@ public class ObjectiveNoteTests
         (text.EndsWith('.'), text.Count(character => character == '.')).ShouldBe((true, 1));
     }
 
-    // The tab and the bar draw this component: none of their own resx types the sentence again, or the two
-    // places could say different things.
+    // The bar draws this component; the Optimise view says the same measure shorter, in its head's state line
+    // (the operator's one sentence, 2026-11-13). No other resx says what is not weighed, so the two places it is
+    // said are these, and they agree on it (OptimisationObjectiveTests holds the tab's).
     [Fact]
-    public void Resources_everyText_saysTheObjectiveInOneResourceOnly()
+    public void Resources_everyText_saysWhatIsNotWeighedInTheNoteAndOptimisesStateLineOnly()
     {
         var resources = InterfaceTexts.All()
             .Where(text => text.Value.Contains("pension accrual", StringComparison.OrdinalIgnoreCase))
-            .Select(text => text.Resource)
+            .Select(text => $"{text.Resource}:{text.Key}")
             .ToList();
 
-        resources.ShouldBe(["Netto.Web.Client.River.ObjectiveNote.resources"]);
+        resources.ShouldBe(["Netto.Web.Client.River.ObjectiveNote.resources:Sentence", "Netto.Web.Client.Tabs.OptimisationTab.resources:State_Moves"], ignoreOrder: true);
     }
 }

@@ -76,7 +76,6 @@
 }
 
 .moves__state,
-.moves__objective,
 .moves__stacked {
     max-width: 46rem;
     margin: 0;
@@ -232,6 +231,11 @@
     justify-items: start;
     gap: 0.3rem;
 }
+
+    /* Folded: the display above would win over the hidden attribute, the browser's own style alone. */
+    .moves__more[hidden] {
+        display: none;
+    }
 
 .moves__why {
     margin: 0;

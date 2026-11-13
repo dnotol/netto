@@ -25,7 +25,7 @@
     <value>Votre plan est déjà le meilleur que Netto trouve avec les faits que vous avez donnés.</value>
   </data>
   <data name="State_Moves" xml:space="preserve">
-    <value>Mesuré depuis le plan affiché. Netto ne touche qu'aux leviers déjà dans votre plan, avec les faits que vous avez donnés.</value>
+    <value>Mesuré en argent dans votre poche cette année, avec les leviers déjà dans votre plan&#160;; la constitution de pension et le bénéfice gardé dans la société ne sont pas pesés.</value>
   </data>
   <data name="Move_Pay" xml:space="preserve">
     <value>Vous verser {0} au lieu de {1}</value>

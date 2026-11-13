@@ -259,7 +259,7 @@ public class FrenchTabsTests
         }));
 
         html.ShouldSatisfyAllConditions(
-            () => html.ShouldContain("Mesuré depuis le plan affiché. Netto ne touche qu'aux leviers déjà dans votre plan, avec les faits que vous avez donnés"),
+            () => html.ShouldContain("Mesuré en argent dans votre poche cette année, avec les leviers déjà dans votre plan"),
             () => html.ShouldContain(">Votre plan<"),
             () => html.ShouldContain(">optimisé<"),
             () => html.ShouldContain(">Gain certain<"),
@@ -270,7 +270,7 @@ public class FrenchTabsTests
             () => html.ShouldMatch("<span[^>]*>Rémunération</span>"),
             () => html.ShouldMatch("<span[^>]*>Quand payer</span>"),
             () => html.ShouldContain("aria-label=\"Pourquoi : Vous verser"),
-            () => html.ShouldNotContain("Measured from"));
+            () => html.ShouldNotContain("Measured in"));
     }
 
     [Fact]
