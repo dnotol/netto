@@ -1,6 +1,7 @@
 using Netto.Core.Allowances;
 using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
+using Netto.Core.Equipment;
 using Netto.Core.Simulation;
 using Netto.Core.SocialContributions;
 using Netto.Core.Vouchers;
@@ -13,12 +14,15 @@ namespace Netto.Tests.Simulation;
 // ProfitBeforePay and PayCeiling share (Lever.FromProfit, as given), and these cases hold its three
 // entry points together: a lever taken off one and not another would make the split's ceiling
 // disagree with the year. Each case is one combination of the levers paid besides pay (the vouchers, the expense allowances
-// without the office allowance, which a rent excludes, the rent, a car the director pays a contribution
-// for), with no royalty, a fixed one or one following the pay, whoever pays the contributions, at a few
+// without the office allowance, which a rent excludes, the rent, phones the company provides and a car, the director paying a
+// contribution for each), with no royalty, a fixed one or one following the pay, whoever pays the contributions, at a few
 // pays; the made-up company prepays enough to leave no surcharge.
 public class ProfitBeforePayParityTests
 {
     private static readonly ExpenseAllowances AllowancesBesideARent = new(0m, 240m, 240m, 300m);
+
+    // Phones alone, which neither the internet nor the computer allowance excludes.
+    private static readonly EquipmentFacts PhonesWithAContribution = new(0, 0, 1, false, 1, 900m, 20m);
 
     private static readonly CarFacts CarWithAContribution = ElectricCar with { PersonalContribution = 1_200m };
 
@@ -39,18 +43,18 @@ public class ProfitBeforePayParityTests
         Following,
     }
 
-    public static TheoryData<bool, bool, bool, bool, Royalty, ContributionsPaidBy, decimal> EveryCombination => Combinations([Royalty.None, Royalty.Fixed, Royalty.Following]);
+    public static TheoryData<bool, bool, bool, bool, bool, Royalty, ContributionsPaidBy, decimal> EveryCombination => Combinations([Royalty.None, Royalty.Fixed, Royalty.Following]);
 
-    public static TheoryData<bool, bool, bool, bool, Royalty, ContributionsPaidBy, decimal> EveryCombinationBesideAFixedRoyalty => Combinations([Royalty.None, Royalty.Fixed]);
+    public static TheoryData<bool, bool, bool, bool, bool, Royalty, ContributionsPaidBy, decimal> EveryCombinationBesideAFixedRoyalty => Combinations([Royalty.None, Royalty.Fixed]);
 
-    public static TheoryData<bool, bool, bool, bool, Royalty, ContributionsPaidBy, decimal> EveryCombinationBesideAFollowingRoyalty => Combinations([Royalty.Following]);
+    public static TheoryData<bool, bool, bool, bool, bool, Royalty, ContributionsPaidBy, decimal> EveryCombinationBesideAFollowingRoyalty => Combinations([Royalty.Following]);
 
     [Theory]
     [MemberData(nameof(EveryCombination))]
     public void ProfitBeforePay_anyLevers_isTheYearsProfitBeforePay(
-        bool vouchers, bool allowances, bool rent, bool car, Royalty royalty, ContributionsPaidBy paidBy, decimal pay)
+        bool vouchers, bool allowances, bool rent, bool equipment, bool car, Royalty royalty, ContributionsPaidBy paidBy, decimal pay)
     {
-        var scenario = With(vouchers, allowances, rent, car, royalty, paidBy, pay);
+        var scenario = With(vouchers, allowances, rent, equipment, car, royalty, paidBy, pay);
 
         var profitBeforePay = YearSimulation.ProfitBeforePay(scenario);
 
@@ -61,9 +65,9 @@ public class ProfitBeforePayParityTests
     [Theory]
     [MemberData(nameof(EveryCombinationBesideAFixedRoyalty))]
     public void PayCeiling_anyLeversBesideAFixedRoyalty_isTheYearsProfitBeforePayNeverBelowZero(
-        bool vouchers, bool allowances, bool rent, bool car, Royalty royalty, ContributionsPaidBy paidBy, decimal pay)
+        bool vouchers, bool allowances, bool rent, bool equipment, bool car, Royalty royalty, ContributionsPaidBy paidBy, decimal pay)
     {
-        var scenario = With(vouchers, allowances, rent, car, royalty, paidBy, pay);
+        var scenario = With(vouchers, allowances, rent, equipment, car, royalty, paidBy, pay);
 
         var ceiling = YearSimulation.PayCeiling(scenario);
 
@@ -74,9 +78,9 @@ public class ProfitBeforePayParityTests
     [Theory]
     [MemberData(nameof(EveryCombinationBesideAFollowingRoyalty))]
     public void PayCeiling_anyLeversBesideAFollowingRoyalty_leavesTheYearAtItThatPay(
-        bool vouchers, bool allowances, bool rent, bool car, Royalty royalty, ContributionsPaidBy paidBy, decimal pay)
+        bool vouchers, bool allowances, bool rent, bool equipment, bool car, Royalty royalty, ContributionsPaidBy paidBy, decimal pay)
     {
-        var scenario = With(vouchers, allowances, rent, car, royalty, paidBy, pay);
+        var scenario = With(vouchers, allowances, rent, equipment, car, royalty, paidBy, pay);
         var ceiling = YearSimulation.PayCeiling(scenario).ShouldNotBeNull();
 
         var year = Run(scenario with { DirectorPay = ceiling });
@@ -90,9 +94,9 @@ public class ProfitBeforePayParityTests
     [Theory]
     [MemberData(nameof(EveryCombinationBesideAFollowingRoyalty))]
     public void PayCeiling_anyLeversBesideAFollowingRoyalty_leavesTheYearACentAboveItLessThanThatPay(
-        bool vouchers, bool allowances, bool rent, bool car, Royalty royalty, ContributionsPaidBy paidBy, decimal pay)
+        bool vouchers, bool allowances, bool rent, bool equipment, bool car, Royalty royalty, ContributionsPaidBy paidBy, decimal pay)
     {
-        var scenario = With(vouchers, allowances, rent, car, royalty, paidBy, pay);
+        var scenario = With(vouchers, allowances, rent, equipment, car, royalty, paidBy, pay);
         var aCentAbove = YearSimulation.PayCeiling(scenario).ShouldNotBeNull() + 0.01m;
 
         var year = Run(scenario with { DirectorPay = aCentAbove });
@@ -100,13 +104,14 @@ public class ProfitBeforePayParityTests
         year.ProfitBeforePay.ShouldBeLessThan(aCentAbove);
     }
 
-    private static Scenario With(bool vouchers, bool allowances, bool rent, bool car, Royalty royalty, ContributionsPaidBy paidBy, decimal pay) =>
+    private static Scenario With(bool vouchers, bool allowances, bool rent, bool equipment, bool car, Royalty royalty, ContributionsPaidBy paidBy, decimal pay) =>
         Scenario(
             directorPay: pay,
             paidBy: paidBy,
             vouchers: vouchers ? AllVouchers : VoucherGrants.None,
             allowances: allowances ? AllowancesBesideARent : ExpenseAllowances.None,
             rent: rent ? RentAtTheCap : null,
+            equipment: equipment ? PhonesWithAContribution : null,
             car: car ? CarWithAContribution : null,
             royalty: royalty switch
             {
@@ -115,20 +120,21 @@ public class ProfitBeforePayParityTests
                 _ => CopyrightRoyalty.None,
             });
 
-    private static TheoryData<bool, bool, bool, bool, Royalty, ContributionsPaidBy, decimal> Combinations(Royalty[] royalties)
+    private static TheoryData<bool, bool, bool, bool, bool, Royalty, ContributionsPaidBy, decimal> Combinations(Royalty[] royalties)
     {
-        var data = new TheoryData<bool, bool, bool, bool, Royalty, ContributionsPaidBy, decimal>();
+        var data = new TheoryData<bool, bool, bool, bool, bool, Royalty, ContributionsPaidBy, decimal>();
         var combinations =
             from vouchers in WithoutAndWith
             from allowances in WithoutAndWith
             from rent in WithoutAndWith
+            from equipment in WithoutAndWith
             from car in WithoutAndWith
             from royalty in royalties
             from paidBy in Payers
             from pay in Pays
-            select (vouchers, allowances, rent, car, royalty, paidBy, pay);
-        foreach (var (vouchers, allowances, rent, car, royalty, paidBy, pay) in combinations)
-            data.Add(vouchers, allowances, rent, car, royalty, paidBy, pay);
+            select (vouchers, allowances, rent, equipment, car, royalty, paidBy, pay);
+        foreach (var (vouchers, allowances, rent, equipment, car, royalty, paidBy, pay) in combinations)
+            data.Add(vouchers, allowances, rent, equipment, car, royalty, paidBy, pay);
 
         return data;
     }

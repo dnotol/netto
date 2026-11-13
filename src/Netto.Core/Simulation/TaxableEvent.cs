@@ -26,6 +26,10 @@ public enum TaxableEvent
     // from immovable property taxed with the pay.
     Rent,
 
+    // The IT and phone the company provides the director for private use: their costs to the company, their
+    // flat-rate benefit in kind, taxed as pay, and the director's contribution.
+    Equipment,
+
     // A car the company puts at the director's disposal for private use: its costs to the company, its
     // benefit in kind, taxed as pay, the director's contribution and what the company adds back.
     CompanyCar,

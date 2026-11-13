@@ -49,7 +49,7 @@ public class TestSupportTests
     public void TestSources_madeUpCompanyFixtures_areDeclaredOnlyInFixtures()
     {
         Declaring(@"\bstatic\s+readonly\s+(?:CompanyStatus\s+SmallPastStartUp|AdvancePayments\s+Prepaid|TaxPrepayments\s+Withheld"
-            + @"|VoucherGrants\s+(?:AllVouchers|MealVouchersOn220Days)|ExpenseAllowances\s+FlatRateAllowances|HomeOfficeRent\s+RentAtTheCap|CarFacts\s+ElectricCar)\b")
+            + @"|VoucherGrants\s+(?:AllVouchers|MealVouchersOn220Days)|ExpenseAllowances\s+FlatRateAllowances|HomeOfficeRent\s+RentAtTheCap|EquipmentFacts\s+LaptopPhoneAndInternet|CarFacts\s+ElectricCar)\b")
             .ShouldBeEmpty();
     }
 

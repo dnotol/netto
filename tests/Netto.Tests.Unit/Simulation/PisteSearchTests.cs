@@ -172,8 +172,10 @@ public class PisteSearchTests
         Should.Throw<ArgumentException>(() => PisteSearch.Run(without, ExampleWithRoyalty, LeverKind.Copyright, On11November, RoyaltyInPlan));
     }
 
-    // Only the levers whose gain in cash the engine measures are ideas: the car and the allowances are not.
+    // Only the levers whose gain in cash the engine measures are ideas: the IT and phone, the car and the
+    // allowances are not.
     [Theory]
+    [InlineData(LeverKind.Equipment)]
     [InlineData(LeverKind.Car)]
     [InlineData(LeverKind.Allowances)]
     public void Run_aLeverThatIsNoIdea_throws(LeverKind lever)

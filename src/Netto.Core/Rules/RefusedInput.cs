@@ -32,6 +32,32 @@ public enum RefusedInput
     // The rent, also when an office allowance is paid beside it.
     Rent,
 
+    // The PCs the company provides, also beside a computer allowance.
+    EquipmentPcs,
+
+    // The tablets it provides, also beside a computer allowance.
+    EquipmentTablets,
+
+    EquipmentMobilePhones,
+
+    // The internet connection it provides, also beside an internet allowance.
+    EquipmentInternet,
+
+    EquipmentPhoneSubscriptions,
+
+    // The day the company provides the set from, and the day the director gives it back on.
+    EquipmentProvidedFrom,
+
+    EquipmentReturnedOn,
+
+    EquipmentYearlyCosts,
+
+    // What the director pays the company for the set's private use, also above its flat values.
+    EquipmentContribution,
+
+    // What the same things would cost privately, which no rule reads: the card weighs the set against it.
+    EquipmentPrivateCost,
+
     CarCatalogueValue,
 
     CarCo2,

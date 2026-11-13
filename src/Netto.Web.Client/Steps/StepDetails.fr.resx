@@ -846,4 +846,43 @@
   <data name="Amount_balance_sheet_threshold" xml:space="preserve">
     <value>Seuil du total du bilan entre les deux montants</value>
   </data>
+  <data name="Title_equipment_costs" xml:space="preserve">
+    <value>Frais de votre informatique et téléphonie</value>
+  </data>
+  <data name="Rule_equipment_costs" xml:space="preserve">
+    <value>Ce que votre informatique et téléphonie coûte à la société sur l'année, tel qu'elle le supporte&#160;: un frais de la société, comme ses frais de fonctionnement, qui diminue son bénéfice, déduit entièrement.</value>
+  </data>
+  <data name="Title_equipment_benefit" xml:space="preserve">
+    <value>Avantage de toute nature de l'informatique et téléphonie avant votre intervention</value>
+  </data>
+  <data name="Rule_equipment_benefit" xml:space="preserve">
+    <value>La valeur forfaitaire annuelle de chaque pièce, par appareil&#160;: un PC 72&#160;€, une tablette ou un téléphone mobile 36&#160;€, un abonnement de téléphonie 48&#160;€ par numéro de téléphone, la connexion internet 60&#160;€ une seule fois quel que soit leur nombre. Mise à disposition une partie de l'année, la valeur de chaque pièce se prend pour ses jours calendrier, le premier compté et le dernier pas, arrondie au cent.</value>
+  </data>
+  <data name="Title_equipment_contribution" xml:space="preserve">
+    <value>Votre intervention</value>
+  </data>
+  <data name="Rule_equipment_contribution" xml:space="preserve">
+    <value>Ce que vous payez à la société pour l'utilisation à des fins personnelles de votre informatique et téléphonie. Elle vient en déduction de l'avantage sur lequel vous êtes imposé, jamais au-delà, et sort de votre poche vers la société.</value>
+  </data>
+  <data name="Title_equipment_benefit_taxed" xml:space="preserve">
+    <value>Avantage de toute nature de l'informatique et téléphonie après votre intervention</value>
+  </data>
+  <data name="Rule_equipment_benefit_taxed" xml:space="preserve">
+    <value>L'avantage diminué de votre intervention. C'est une rémunération de dirigeant jamais payée en argent&#160;: dans la base de vos cotisations sociales, votre impôt et le précompte professionnel mensuel.</value>
+  </data>
+  <data name="Amount_pc_benefit" xml:space="preserve">
+    <value>PC, par an</value>
+  </data>
+  <data name="Amount_tablet_benefit" xml:space="preserve">
+    <value>Tablette, par an</value>
+  </data>
+  <data name="Amount_mobile_phone_benefit" xml:space="preserve">
+    <value>Téléphone mobile, par an</value>
+  </data>
+  <data name="Amount_internet_benefit" xml:space="preserve">
+    <value>Connexion internet, par an</value>
+  </data>
+  <data name="Amount_phone_subscription_benefit" xml:space="preserve">
+    <value>Abonnement de téléphonie, par an</value>
+  </data>
 </root>

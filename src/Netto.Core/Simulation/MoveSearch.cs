@@ -103,6 +103,7 @@ public enum LeverKind
     Vouchers,
     Allowances,
     Rent,
+    Equipment,
     Car,
     Copyright,
 }

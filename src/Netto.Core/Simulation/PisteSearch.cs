@@ -16,7 +16,8 @@ public sealed record Piste(LeverKind Lever, MovePlan Without, MovePlan With, IRe
 // the plan with the lever, its facts as the viewer gave them, run with the retuning finders and that lever's
 // own. Both pockets are runs of the year (YearSimulation.Run), so the gain is the difference of two runs,
 // never arithmetic of its own. Ideas are the levers whose gain in cash the engine measures from the viewer's
-// facts: a car always takes cash from the pocket, and no allowance is proposed without a ruling.
+// facts: a car, or the IT and phone the company provides, always takes cash from the pocket, and no
+// allowance is proposed without a ruling.
 public static class PisteSearch
 {
     // The levers that can be ideas, in the river's order.

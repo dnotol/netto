@@ -20,12 +20,12 @@ public class LeverOrderTests
     public static TheoryData<int> YearsWithoutEveryLeversRules => [2025, UnsupportedIncomeYear];
 
     [Fact]
-    public void For_2026_isTheFiveLeversInTheLawsOrder()
+    public void For_2026_isTheSixLeversInTheLawsOrder()
     {
         var levers = LeverOrder.For(2026).ShouldNotBeNull();
 
         levers.Select(lever => lever.GetType()).ShouldBe(
-            [typeof(VoucherLever), typeof(AllowanceLever), typeof(RentLever), typeof(CarLever), typeof(CopyrightLever)]);
+            [typeof(VoucherLever), typeof(AllowanceLever), typeof(RentLever), typeof(EquipmentLever), typeof(CarLever), typeof(CopyrightLever)]);
     }
 
     // 2025 has rules for the rent and the royalty, for the Tax-Calc tests, but none for the vouchers.

@@ -606,4 +606,46 @@
   <data name="Reference_social-contributions/inasti_faq-cotisation-a-charge-des-societes_2026-10-25.html#contribution_bands" xml:space="preserve">
     <value>«&#160;Pour la cotisation 2026, c'est le total du bilan de votre société en 2024&#160;»&#160;: sous 879.163,44&#160;€, 409,30&#160;€&#160;; au-delà, 1.022,38&#160;€</value>
   </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-art-18-revenus-2026_2026-08-10.html#equipment_benefits" xml:space="preserve">
+    <value>§3, 10&#160;: l'avantage forfaitaire annuel d'un PC, fixe ou portable, est de 72&#160;€&#160;; d'une tablette ou d'un téléphone mobile, 36&#160;€&#160;; de la connexion internet, fixe ou mobile, quel que soit le nombre d'appareils qui l'utilisent, 60&#160;€&#160;; d'un abonnement de téléphonie fixe ou mobile, 48&#160;€, chacun mis gratuitement à disposition</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-art-18-revenus-2026_2026-08-10.html#contribution" xml:space="preserve">
+    <value>§4&#160;: pour un avantage du §3, 2 à 10 qui n'est pas consenti à titre gratuit, l'avantage à prendre en considération est sa valeur forfaitaire diminuée de l'intervention du bénéficiaire</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_circulaire-2017-c-82-pc-tablette-internet-telephone_2019-10-07.html" xml:space="preserve">
+    <value>Circulaire 2017/C/82 du 13.12.2017 relative aux avantages de toute nature résultant de l'utilisation à des fins personnelles d'un PC, d'une tablette, d'une connexion internet, d'un téléphone mobile ou d'un abonnement de téléphonie fixe ou mobile mis gratuitement à disposition, sur Fisconetplus, dernière modification le 07.10.2019</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2017-c-82-pc-tablette-internet-telephone_2019-10-07.html" xml:space="preserve">
+    <value>Circulaire 2017/C/82</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2017-c-82-pc-tablette-internet-telephone_2019-10-07.html#per_appliance" xml:space="preserve">
+    <value>Les montants forfaitaires d'un PC et d'une tablette ou d'un téléphone mobile s'appliquent par appareil mis à disposition et s'additionnent&#160;; celui de la connexion internet est unique, quel que soit le nombre de connexions et d'appareils qui les utilisent&#160;; ils visent ce dont le bénéficiaire n'est ni propriétaire, ni titulaire de l'abonnement internet, ni redevable des factures téléphoniques</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html" xml:space="preserve">
+    <value>Circulaire 2018/C/63 du 24.05.2018 relative aux avantages de toute nature résultant de l'utilisation à des fins personnelles d'un PC, d'une tablette, d'une connexion internet, d'un téléphone mobile ou d'un abonnement de téléphonie fixe ou mobile, sur Fisconetplus</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html" xml:space="preserve">
+    <value>Circulaire 2018/C/63</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html#part_of_the_year" xml:space="preserve">
+    <value>§25–26&#160;: les montants forfaitaires valent pour une année complète&#160;; pour une partie de la période imposable, l'avantage se fixe selon les jours calendrier de mise à disposition, le premier jour compté et le dernier pas</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html#contribution_per_benefit" xml:space="preserve">
+    <value>Circulaire 2018/C/63, §23</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html#contribution_per_benefit" xml:space="preserve">
+    <value>§23&#160;: une contribution personnelle vient en déduction du seul avantage auquel elle correspond&#160;; ce qui dépasse la valeur forfaitaire de cet avantage ne vient en déduction ni de la rémunération imposable, ni d'un autre avantage, ni de l'année suivante</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html#subscription_per_number" xml:space="preserve">
+    <value>Circulaire 2018/C/63, §27–29</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html#subscription_per_number" xml:space="preserve">
+    <value>§27–29&#160;: un abonnement de téléphonie correspond à chaque numéro de téléphone, de sorte qu'un abonnement mobile avec plusieurs cartes SIM ayant chacune leur numéro est imposé à 48&#160;€ par an pour chaque carte</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html#allowance_beside_equipment" xml:space="preserve">
+    <value>Circulaire 2021/C/20, §48 et §52</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html#allowance_beside_equipment" xml:space="preserve">
+    <value>§48&#160;: l'indemnité forfaitaire d'internet seulement si l'employeur n'intervient pas d'une autre manière dans les frais d'internet privés&#160;; §52&#160;: l'indemnité forfaitaire d'ordinateur seulement s'il n'intervient pas d'une autre manière dans ces frais, par exemple en fournissant lui-même un PC portable ou une tablette</value>
+  </data>
 </root>

@@ -3,6 +3,7 @@ using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.DirectorPay;
 using Netto.Core.Dividends;
+using Netto.Core.Equipment;
 using Netto.Core.Rent;
 using Netto.Core.Vouchers;
 
@@ -14,11 +15,11 @@ namespace Netto.Core.Simulation;
 // in pocket, the vouchers, the allowances and the rent in it and the car's contribution out of it, and
 // what stays in the company add up to what the company earns before it pays its director anything
 // (Scenario.ProfitBeforeDirector), less the contribution it owes INASTI whatever it pays them
-// (CompanyContribution) and what its car costs it (Car.Costs), costs of the company like its running
+// (CompanyContribution) and what its IT and phone and its car cost it (Equipment.Costs, Car.Costs), costs of the company like its running
 // costs, plus the profits kept from earlier years; the corporate tax among them includes the surcharge
 // the advance payments left. Rent
-// is the rent as the rules take it, Car the car, all zero without one; the pay's own figures are
-// DirectorPay's, the car's benefit taxed in them, and what the rent adds to the personal tax its
+// is the rent as the rules take it, Equipment the IT and phone, Car the car, all zero without one; the pay's own figures are
+// DirectorPay's, the car's and the IT and phone's benefits taxed in them, and what the rent adds to the personal tax its
 // OtherIncomeTax. The disallowed expenses are what the company cannot deduct of what it pays the
 // director besides pay and what it adds back of the car's benefit, added to its taxable income. The
 // dividend is what the profit after tax and those earlier profits leave once the reserve is kept; the
@@ -33,6 +34,7 @@ public sealed record YearResult(
     decimal ProfitBeforePay,
     VoucherResult Vouchers,
     RentResult Rent,
+    EquipmentResult Equipment,
     CarResult Car,
     CopyrightResult Copyright,
     decimal DisallowedExpenses,

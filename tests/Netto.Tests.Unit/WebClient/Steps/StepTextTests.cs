@@ -134,6 +134,20 @@ public class StepTextTests
         MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
     }
 
+    // The IT and phone's steps, every kind of piece, part of the year and a contribution.
+    [Fact]
+    public void StepDetailsResx_everyKeyOfTheEquipmentsSteps_hasAText()
+    {
+        var scenario = Unprepaid(50_000m, WithholdingCategory.Standard) with
+        {
+            Equipment = new Netto.Core.Equipment.EquipmentFacts(1, 1, 1, true, 1, 1_500m, 16m) { ProvidedFrom = new DateOnly(2026, 3, 1) },
+        };
+
+        var (value, _) = YearSimulation.Run(scenario);
+
+        MissingTexts(value.ShouldNotBeNull().Steps).ShouldBeEmpty();
+    }
+
     // The car's steps, with every age band a benefit can use, both add-back rates and a contribution.
     [Theory]
     [InlineData(2026, false)]

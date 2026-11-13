@@ -168,4 +168,46 @@
   <data name="Error_other_dependants_negative" xml:space="preserve">
     <value>Le nombre d'autres personnes à charge ne peut pas être négatif. Saisissez 0 si vous n'en avez pas.</value>
   </data>
+  <data name="Error_equipment_pcs_negative" xml:space="preserve">
+    <value>Le nombre de PC ne peut pas être négatif. Saisissez 0 si la société n'en met aucun à votre disposition.</value>
+  </data>
+  <data name="Error_equipment_tablets_negative" xml:space="preserve">
+    <value>Le nombre de tablettes ne peut pas être négatif. Saisissez 0 si la société n'en met aucune à votre disposition.</value>
+  </data>
+  <data name="Error_equipment_mobile_phones_negative" xml:space="preserve">
+    <value>Le nombre de téléphones mobiles ne peut pas être négatif. Saisissez 0 si la société n'en met aucun à votre disposition.</value>
+  </data>
+  <data name="Error_equipment_phone_subscriptions_negative" xml:space="preserve">
+    <value>Le nombre d'abonnements de téléphonie ne peut pas être négatif. Saisissez 0 si la société n'en met aucun à votre disposition.</value>
+  </data>
+  <data name="Error_equipment_yearly_costs_negative" xml:space="preserve">
+    <value>Ce que votre informatique et téléphonie coûte à la société ne peut pas être négatif. Saisissez 0 si vous n'avez pas encore de montant.</value>
+  </data>
+  <data name="Error_equipment_contribution_negative" xml:space="preserve">
+    <value>Votre intervention ne peut pas être négative. Saisissez 0 si vous ne payez rien pour l'utilisation à des fins personnelles de votre informatique et téléphonie.</value>
+  </data>
+  <data name="Error_equipment_contribution_above_benefit" xml:space="preserve">
+    <value>Votre intervention dépasse la valeur forfaitaire de votre informatique et téléphonie pour les jours comptés&#160;: elle ne vient qu'en déduction de cette valeur, jamais de votre rémunération ni d'un autre avantage.</value>
+  </data>
+  <data name="Error_pc_with_computer_allowance" xml:space="preserve">
+    <value>Un PC mis à disposition par la société et une indemnité d'ordinateur ne vont pas ensemble&#160;: l'indemnité ne vaut que pour un ordinateur dont la société ne supporte aucun frais. Mettez l'indemnité d'ordinateur à 0 pour garder le PC, ou les PC à 0 pour garder l'indemnité.</value>
+  </data>
+  <data name="Error_tablet_with_computer_allowance" xml:space="preserve">
+    <value>Une tablette mise à disposition par la société et une indemnité d'ordinateur ne vont pas ensemble&#160;: l'indemnité ne vaut que pour un ordinateur dont la société ne supporte aucun frais. Mettez l'indemnité d'ordinateur à 0 pour garder la tablette, ou les tablettes à 0 pour garder l'indemnité.</value>
+  </data>
+  <data name="Error_internet_with_internet_allowance" xml:space="preserve">
+    <value>Une connexion internet mise à disposition par la société et une indemnité d'internet ne vont pas ensemble&#160;: l'indemnité ne vaut que pour une connexion dont la société ne supporte aucun frais. Mettez l'indemnité d'internet à 0 pour garder la connexion, ou décochez-la pour garder l'indemnité.</value>
+  </data>
+  <data name="Error_equipment_provided_after_year" xml:space="preserve">
+    <value>Une informatique et téléphonie que vous n'avez qu'après la fin de l'année n'est à votre disposition aucun jour de celle-ci&#160;: saisissez le jour où vous l'avez, dans l'année ou avant, ou laissez-le vide pour toute l'année.</value>
+  </data>
+  <data name="Error_equipment_returned_before_year" xml:space="preserve">
+    <value>Une informatique et téléphonie restituée le premier jour de l'année ou avant n'est à votre disposition aucun jour de celle-ci&#160;: saisissez le jour où vous la restituez, dans l'année ou après, ou laissez-le vide pour toute l'année.</value>
+  </data>
+  <data name="Error_equipment_returned_before_provided" xml:space="preserve">
+    <value>Le jour où vous restituez votre informatique et téléphonie doit suivre celui où vous l'avez&#160;: ce jour-là compte, celui de la restitution pas.</value>
+  </data>
+  <data name="Error_equipment_private_cost_negative" xml:space="preserve">
+    <value>Ce que les mêmes choses vous coûteraient à titre privé ne peut pas être négatif.</value>
+  </data>
 </root>

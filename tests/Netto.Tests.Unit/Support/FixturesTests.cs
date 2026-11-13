@@ -67,7 +67,7 @@ public class FixturesTests
         var scenario = Scenario(
             directorPay: 30_000m, reserve: 4_000m, revenue: 90_000m, company: company, category: WithholdingCategory.Standard, earlierProfits: 7_000m,
             advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.AsWithheld, paidBy: ContributionsPaidBy.Company,
-            vouchers: AllVouchers, allowances: FlatRateAllowances, rent: RentAtTheCap, car: ElectricCar, royalty: royalty, band: CompanyContributionBand.Upper,
+            vouchers: AllVouchers, allowances: FlatRateAllowances, rent: RentAtTheCap, equipment: LaptopPhoneAndInternet, car: ElectricCar, royalty: royalty, band: CompanyContributionBand.Upper,
             fundFeeRate: 0.0305m);
 
         (scenario.DirectorPay, scenario.Reserve, scenario.Revenue, scenario.Company, scenario.DividendCategory, scenario.EarlierProfits, scenario.AdvancePayments,
@@ -75,6 +75,7 @@ public class FixturesTests
             scenario.CompanyContributionBand, scenario.FundFeeRate)
             .ShouldBe((30_000m, 4_000m, 90_000m, company, WithholdingCategory.Standard, 7_000m, AdvancePayments.None, TaxPrepayments.AsWithheld,
                 ContributionsPaidBy.Company, AllVouchers, FlatRateAllowances, RentAtTheCap, ElectricCar, royalty, CompanyContributionBand.Upper, (decimal?)0.0305m));
+        scenario.Equipment.ShouldBe(LaptopPhoneAndInternet);
     }
 
     // The engine tests take the river's example as its scenario rather than through the client, so this is

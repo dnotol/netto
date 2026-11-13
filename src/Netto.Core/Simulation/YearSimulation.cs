@@ -14,7 +14,7 @@ namespace Netto.Core.Simulation;
 // levers start from; what the company pays the director besides pay, or puts at their disposal, comes
 // off it, each lever taking what the scenario gives it, which leaves the profit before pay the split
 // shares; each lever brings the pocket what its rules say, the company cannot deduct some of it, and it
-// hands the pay what is taxed with it, a rent's net, a car's benefit in kind, a royalty's movable
+// hands the pay what is taxed with it, a rent's net, a car's and the IT and phone's benefits in kind, a royalty's movable
 // income, whose tax the year counts on the whole income (GrossToNet). The company's cost of the director
 // pay, the gross and the social contributions it pays on the director's behalf, lowers the company's
 // taxable income, what it cannot deduct of the levers joins it, corporate tax takes its share, with the
@@ -23,7 +23,7 @@ namespace Netto.Core.Simulation;
 // state the year pays out its own profit (decided 2026-10-19). No other disallowed expenses and no
 // losses carried forward. Each lever says what it does through one contract (Lever, LeverYear), and the
 // year reads a lever's result by its type only where YearResult or PayLevel hands a card a typed result:
-// the vouchers', the rent's, the car's and the royalty's.
+// the vouchers', the rent's, the IT and phone's, the car's and the royalty's.
 public static class YearSimulation
 {
     public static readonly Refusal IncomeYearNotSupported = GrossToNet.IncomeYearNotSupported;
@@ -99,6 +99,7 @@ public static class YearSimulation
             besidesPay.ProfitBeforePay,
             besidesPay.Of<VoucherYear>().Vouchers,
             besidesPay.Of<RentYear>().Rent,
+            besidesPay.Of<EquipmentYear>().Set,
             besidesPay.Of<CarYear>().Car,
             besidesPay.Of<CopyrightYear>().Copyright,
             besidesPay.Disallowed,
@@ -193,7 +194,8 @@ public static class YearSimulation
     // The smallest director pay, as the split moves it, that keeps the reduced corporate rate out of the
     // profit before pay: the smallest pay art. 215 accepts out of the taxable income the company would
     // have at no pay, which adds back what it cannot deduct of the vouchers and the car's benefit, with
-    // the car's benefit counted in the pay and held within its share of it (CorporateTaxCalculator),
+    // the benefits in kind, the car's and the IT and phone's, counted in the pay and held within their share
+    // of it (CorporateTaxCalculator),
     // and, when the company pays the contributions, the smallest payslip gross whose taxable pay, the
     // benefit aside, reaches it. Null when the rate does not depend on the pay, when no pay up to the
     // profit before pay keeps it (more of the vouchers the company cannot deduct than that profit, or a
@@ -299,7 +301,7 @@ public static class YearSimulation
 
     // What follows the director pay: its cost to the company comes off the profit before pay, and art. 215
     // tests its minimum pay on the taxable pay, which counts what the company bore for the director and
-    // the car's benefit too (SPF return explanations, part 2, cadre XVI, 1; the commentary on art. 215,
+    // the benefits in kind too, the car's and the IT and phone's (SPF return explanations, part 2, cadre XVI, 1; the commentary on art. 215,
     // n° 215/44), but never a royalty's part taxed as pay (decided unattended: art. 215 asks for pay to
     // an art. 32 director, and leaving it out never overstates the gain), and holds that benefit within
     // its share of it (al. 3, 5°); the cost is the gross plus the contributions the company pays on the

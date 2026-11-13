@@ -3,6 +3,7 @@ using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.Dividends;
+using Netto.Core.Equipment;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
 using Netto.Core.Simulation;
@@ -66,6 +67,11 @@ internal static class Fixtures
     // back.
     public static readonly CarFacts ElectricCar = new(50_000m, new DateOnly(2026, 1, 10), 8_000m, false, 0m);
 
+    // A PC, a mobile phone with its subscription and an internet connection the company provides all year:
+    // 72 + 36 + 48 + 60 = 216 of benefit taxed as pay (art. 18 §3, 10 AR/CIR 92), and 1,500 of yearly costs,
+    // which the company deducts in full.
+    public static readonly EquipmentFacts LaptopPhoneAndInternet = new(1, 0, 1, true, 1, 1_500m, 0m);
+
     // The river's example year as its scenario (RiverInputs.Example, held to it by FixturesTests): nothing
     // prepaid by the company, and the director's pay withheld on as the key formula says.
     public static Scenario RiverExample => Scenario(advancePayments: AdvancePayments.None, taxPrepayments: TaxPrepayments.AsWithheld);
@@ -93,6 +99,7 @@ internal static class Fixtures
         VoucherGrants? vouchers = null,
         ExpenseAllowances? allowances = null,
         HomeOfficeRent? rent = null,
+        EquipmentFacts? equipment = null,
         CarFacts? car = null,
         CopyrightRoyalty? royalty = null,
         CompanyContributionBand band = CompanyContributionBand.Lower,
@@ -108,6 +115,7 @@ internal static class Fixtures
             Vouchers = vouchers ?? VoucherGrants.None,
             Allowances = allowances ?? ExpenseAllowances.None,
             Rent = rent ?? HomeOfficeRent.None,
+            Equipment = equipment ?? EquipmentFacts.None,
             Car = car ?? CarFacts.None,
             Copyright = royalty ?? CopyrightRoyalty.None,
             Household = household ?? Household.None,

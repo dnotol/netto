@@ -29,7 +29,7 @@ namespace Netto.Core.DirectorPay;
 // moves, the surcharge base subtracting only the credit granted. The year's figures, the advance
 // payments with their suggested payment, the next 1,000 and the assessment, are on the whole income.
 //
-// A benefit in kind, a company car's, is pay never paid in cash (art. 31 al. 2, 2° and art. 32): it
+// A benefit in kind, a company car's or the IT and phone's, is pay never paid in cash (art. 31 al. 2, 2° and art. 32): it
 // joins the taxable pay, so INASTI's base, the income tax and the key formula's withholding (annex
 // III, n° 14.1) take it as they would the same amount paid in cash, while the pocket and the
 // company's cost of the pay leave it out; the statement shows its twelfth beside the gross.

@@ -641,6 +641,9 @@ internal static class RiverErrors
         RefusedInput.MealVoucherDays or RefusedInput.EcoVouchers or RefusedInput.SportCultureVouchers => RiverModule.Vouchers,
         RefusedInput.OfficeAllowance or RefusedInput.InternetAllowance or RefusedInput.ComputerAllowance or RefusedInput.PhoneCosts => RiverModule.Allowances,
         RefusedInput.CadastralIncome or RefusedInput.ShareLet or RefusedInput.Rent => RiverModule.Rent,
+        RefusedInput.EquipmentPcs or RefusedInput.EquipmentTablets or RefusedInput.EquipmentMobilePhones or RefusedInput.EquipmentInternet
+            or RefusedInput.EquipmentPhoneSubscriptions or RefusedInput.EquipmentProvidedFrom or RefusedInput.EquipmentReturnedOn
+            or RefusedInput.EquipmentYearlyCosts or RefusedInput.EquipmentContribution or RefusedInput.EquipmentPrivateCost => RiverModule.River,
         RefusedInput.CarCatalogueValue or RefusedInput.CarCo2 or RefusedInput.CarMatchingCo2 or RefusedInput.CarAcquired or RefusedInput.CarYearlyCosts
             or RefusedInput.CarHeldFrom or RefusedInput.CarReturnedOn or RefusedInput.CarContribution or RefusedInput.CarPrivateCost => RiverModule.Car,
         RefusedInput.Royalty or RefusedInput.CreativeShare => RiverModule.Copyright,

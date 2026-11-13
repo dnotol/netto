@@ -3,6 +3,7 @@ using Netto.Core.CompanyCar;
 using Netto.Core.Copyright;
 using Netto.Core.CorporateTax;
 using Netto.Core.Dividends;
+using Netto.Core.Equipment;
 using Netto.Core.PersonalTax;
 using Netto.Core.Rent;
 using Netto.Core.Rules;
@@ -20,7 +21,8 @@ namespace Netto.Core.Simulation;
 // director pay and paid in advance on its income tax, none unless given, who pays the director's
 // social contributions, the director unless given, the rate of their social insurance fund's management
 // fee, a fraction, none unless given, the vouchers it grants the director, the expense
-// allowances it pays them, the rent it pays for the part of their home it uses as an office, the car
+// allowances it pays them, the rent it pays for the part of their home it uses as an office, the IT
+// and phone it provides them, the car
 // it puts at their disposal and the copyright royalty it pays them, none unless given: an amount the
 // user fixes, or one that follows the pay, what an advance ruling accepts at each pay. The director
 // lives in Wallonia unless given another region, which has no rules yet. The company's balance sheet is
@@ -53,6 +55,8 @@ public sealed record Scenario(
 
     public HomeOfficeRent Rent { get; init; } = HomeOfficeRent.None;
 
+    public EquipmentFacts Equipment { get; init; } = EquipmentFacts.None;
+
     public CarFacts Car { get; init; } = CarFacts.None;
 
     public CopyrightRoyalty Copyright { get; init; } = CopyrightRoyalty.None;
@@ -63,7 +67,7 @@ public sealed record Scenario(
     public Household Household { get; init; } = Household.None;
 
     // What the company earns before it pays its director anything, pay, vouchers, expense allowances,
-    // rent, a car or a royalty, and before INASTI's yearly company contribution. What the director pay
+    // rent, IT and phone, a car or a royalty, and before INASTI's yearly company contribution. What the director pay
     // and the company's profit share is what the contribution and those levers leave of it
     // (YearSimulation.ProfitBeforePay).
     public decimal ProfitBeforeDirector => Revenue - RunningCosts;

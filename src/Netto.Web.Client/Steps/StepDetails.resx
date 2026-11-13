@@ -846,4 +846,43 @@
   <data name="Amount_balance_sheet_threshold" xml:space="preserve">
     <value>Balance-sheet total between the two amounts</value>
   </data>
+  <data name="Title_equipment_costs" xml:space="preserve">
+    <value>Your IT and phone's costs</value>
+  </data>
+  <data name="Rule_equipment_costs" xml:space="preserve">
+    <value>What your IT and phone cost the company over the year, as it bears them: a cost of the company, like its running costs, which lowers its profit, deducted in full.</value>
+  </data>
+  <data name="Title_equipment_benefit" xml:space="preserve">
+    <value>IT and phone's benefit in kind before your contribution</value>
+  </data>
+  <data name="Rule_equipment_benefit" xml:space="preserve">
+    <value>Each piece's flat yearly value, per appliance: a PC 72, a tablet or a mobile phone 36, a phone subscription 48 for each phone number, the internet connection 60 once whatever their number. Provided for part of the year, each piece's value is taken for its calendar days, the first counted and the last not, rounded to the cent.</value>
+  </data>
+  <data name="Title_equipment_contribution" xml:space="preserve">
+    <value>Your contribution</value>
+  </data>
+  <data name="Rule_equipment_contribution" xml:space="preserve">
+    <value>What you pay the company for the private use of your IT and phone. It comes off the benefit you are taxed on, never more than it, and leaves your pocket for the company.</value>
+  </data>
+  <data name="Title_equipment_benefit_taxed" xml:space="preserve">
+    <value>IT and phone's benefit in kind after your contribution</value>
+  </data>
+  <data name="Rule_equipment_benefit_taxed" xml:space="preserve">
+    <value>The benefit less your contribution. It is director pay never paid in cash: in your social contributions' base, your income tax and the monthly withholding.</value>
+  </data>
+  <data name="Amount_pc_benefit" xml:space="preserve">
+    <value>PC, a year</value>
+  </data>
+  <data name="Amount_tablet_benefit" xml:space="preserve">
+    <value>Tablet, a year</value>
+  </data>
+  <data name="Amount_mobile_phone_benefit" xml:space="preserve">
+    <value>Mobile phone, a year</value>
+  </data>
+  <data name="Amount_internet_benefit" xml:space="preserve">
+    <value>Internet connection, a year</value>
+  </data>
+  <data name="Amount_phone_subscription_benefit" xml:space="preserve">
+    <value>Phone subscription, a year</value>
+  </data>
 </root>

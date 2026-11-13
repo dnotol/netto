@@ -606,4 +606,46 @@
   <data name="Reference_social-contributions/inasti_faq-cotisation-a-charge-des-societes_2026-10-25.html#contribution_bands" xml:space="preserve">
     <value>« Pour la cotisation 2026, c'est le total du bilan de votre société en 2024 »: under 879,163.44, 409.30; above it, 1,022.38</value>
   </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-art-18-revenus-2026_2026-08-10.html#equipment_benefits" xml:space="preserve">
+    <value>§3, 10: the flat yearly benefit of a PC, fixed or portable, is 72; of a tablet or a mobile phone 36; of the internet connection, fixed or mobile, whatever the number of devices using it, 60; of a fixed or mobile phone subscription 48, each provided free of charge</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_arcir92-art-18-revenus-2026_2026-08-10.html#contribution" xml:space="preserve">
+    <value>§4: for a benefit of §3, 2 to 10 not granted free of charge, the benefit taken into account is its flat value less the beneficiary's contribution</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_circulaire-2017-c-82-pc-tablette-internet-telephone_2019-10-07.html" xml:space="preserve">
+    <value>Circulaire 2017/C/82 du 13.12.2017 relative aux avantages de toute nature résultant de l'utilisation à des fins personnelles d'un PC, d'une tablette, d'une connexion internet, d'un téléphone mobile ou d'un abonnement de téléphonie fixe ou mobile mis gratuitement à disposition, on Fisconetplus, last modified 07.10.2019</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2017-c-82-pc-tablette-internet-telephone_2019-10-07.html" xml:space="preserve">
+    <value>Circular 2017/C/82</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2017-c-82-pc-tablette-internet-telephone_2019-10-07.html#per_appliance" xml:space="preserve">
+    <value>The flat values of a PC and of a tablet or a mobile phone apply per appliance provided and add up; the internet connection's is one, whatever the number of connections and of devices using them; they cover what the beneficiary neither owns, nor holds the internet subscription of, nor owes the phone bills of</value>
+  </data>
+  <data name="Title_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html" xml:space="preserve">
+    <value>Circulaire 2018/C/63 du 24.05.2018 relative aux avantages de toute nature résultant de l'utilisation à des fins personnelles d'un PC, d'une tablette, d'une connexion internet, d'un téléphone mobile ou d'un abonnement de téléphonie fixe ou mobile, on Fisconetplus</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html" xml:space="preserve">
+    <value>Circular 2018/C/63</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html#part_of_the_year" xml:space="preserve">
+    <value>§25–26: the flat values are for a whole year; for part of the taxable period, the benefit is set by the calendar days of provision, the first day counted and the last not</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html#contribution_per_benefit" xml:space="preserve">
+    <value>Circular 2018/C/63, §23</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html#contribution_per_benefit" xml:space="preserve">
+    <value>§23: a personal contribution comes off the one benefit it is paid for; what exceeds that benefit's flat value comes off neither the taxable pay nor another benefit, nor the next year</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html#subscription_per_number" xml:space="preserve">
+    <value>Circular 2018/C/63, §27–29</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2018-c-63-pc-tablette-internet-telephone_2018-05-24.html#subscription_per_number" xml:space="preserve">
+    <value>§27–29: a phone subscription is one for each phone number, so a mobile subscription with several SIM cards, each with its own number, is taxed 48 a year for each card</value>
+  </data>
+  <data name="Label_personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html#allowance_beside_equipment" xml:space="preserve">
+    <value>Circular 2021/C/20, §48 and §52</value>
+  </data>
+  <data name="Reference_personal-tax/spf-finances_circulaire-2021-c-20-teletravail_2026-09-09.html#allowance_beside_equipment" xml:space="preserve">
+    <value>§48: the flat internet allowance only if the employer bears no other part of the private internet costs; §52: the flat computer allowance only if it bears none of those costs otherwise, for instance by providing a laptop or a tablet itself</value>
+  </data>
 </root>

@@ -23,6 +23,16 @@ public class RiverErrorsTests
     {
         [RefusedInput.IncomeYear] = "the river's alert, above every card: an income year with no rules has no field to mark",
         [RefusedInput.BilledContributions] = "When to pay, which holds what the fund bills each quarter and shows its refusal itself",
+        [RefusedInput.EquipmentPcs] = "the river's alert: no card holds the IT and phone's inputs yet",
+        [RefusedInput.EquipmentTablets] = "the river's alert: no card holds the IT and phone's inputs yet",
+        [RefusedInput.EquipmentMobilePhones] = "the river's alert: no card holds the IT and phone's inputs yet",
+        [RefusedInput.EquipmentInternet] = "the river's alert: no card holds the IT and phone's inputs yet",
+        [RefusedInput.EquipmentPhoneSubscriptions] = "the river's alert: no card holds the IT and phone's inputs yet",
+        [RefusedInput.EquipmentProvidedFrom] = "the river's alert: no card holds the IT and phone's inputs yet",
+        [RefusedInput.EquipmentReturnedOn] = "the river's alert: no card holds the IT and phone's inputs yet",
+        [RefusedInput.EquipmentYearlyCosts] = "the river's alert: no card holds the IT and phone's inputs yet",
+        [RefusedInput.EquipmentContribution] = "the river's alert: no card holds the IT and phone's inputs yet",
+        [RefusedInput.EquipmentPrivateCost] = "the river's alert: no card holds the IT and phone's inputs yet",
     };
 
     // The cards the year's, the pay's and the royalty's refusals show on, each module by its name: the pay is

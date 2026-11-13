@@ -168,4 +168,46 @@
   <data name="Error_other_dependants_negative" xml:space="preserve">
     <value>The number of other dependants cannot be negative. Enter 0 if you have none.</value>
   </data>
+  <data name="Error_equipment_pcs_negative" xml:space="preserve">
+    <value>The number of PCs cannot be negative. Enter 0 if the company provides none.</value>
+  </data>
+  <data name="Error_equipment_tablets_negative" xml:space="preserve">
+    <value>The number of tablets cannot be negative. Enter 0 if the company provides none.</value>
+  </data>
+  <data name="Error_equipment_mobile_phones_negative" xml:space="preserve">
+    <value>The number of mobile phones cannot be negative. Enter 0 if the company provides none.</value>
+  </data>
+  <data name="Error_equipment_phone_subscriptions_negative" xml:space="preserve">
+    <value>The number of phone subscriptions cannot be negative. Enter 0 if the company provides none.</value>
+  </data>
+  <data name="Error_equipment_yearly_costs_negative" xml:space="preserve">
+    <value>What your IT and phone cost the company cannot be negative. Enter 0 if you have no figure yet.</value>
+  </data>
+  <data name="Error_equipment_contribution_negative" xml:space="preserve">
+    <value>Your contribution cannot be negative. Enter 0 if you pay nothing for the private use of your IT and phone.</value>
+  </data>
+  <data name="Error_equipment_contribution_above_benefit" xml:space="preserve">
+    <value>Your contribution is more than the flat value of your IT and phone for the days counted: it comes off that value only, never off your pay or another benefit.</value>
+  </data>
+  <data name="Error_pc_with_computer_allowance" xml:space="preserve">
+    <value>A PC the company provides and a computer allowance cannot go together: the allowance is only for a computer the company bears no cost of. Set the computer allowance to 0 to keep the PC, or the PCs to 0 to keep the allowance.</value>
+  </data>
+  <data name="Error_tablet_with_computer_allowance" xml:space="preserve">
+    <value>A tablet the company provides and a computer allowance cannot go together: the allowance is only for a computer the company bears no cost of. Set the computer allowance to 0 to keep the tablet, or the tablets to 0 to keep the allowance.</value>
+  </data>
+  <data name="Error_internet_with_internet_allowance" xml:space="preserve">
+    <value>An internet connection the company provides and an internet allowance cannot go together: the allowance is only for a connection the company bears no cost of. Set the internet allowance to 0 to keep the connection, or untick it to keep the allowance.</value>
+  </data>
+  <data name="Error_equipment_provided_after_year" xml:space="preserve">
+    <value>IT and phone provided only from after the end of the year are not yours on any day of it: enter the day you have them from, within the year or before, or leave it empty for the whole year.</value>
+  </data>
+  <data name="Error_equipment_returned_before_year" xml:space="preserve">
+    <value>IT and phone given back on or before the first day of the year are not yours on any day of it: enter the day you give them back on, within the year or after, or leave it empty for the whole year.</value>
+  </data>
+  <data name="Error_equipment_returned_before_provided" xml:space="preserve">
+    <value>The day you give your IT and phone back on must come after the day you have them from: that day counts, the day you give them back does not.</value>
+  </data>
+  <data name="Error_equipment_private_cost_negative" xml:space="preserve">
+    <value>What the same things would cost you privately cannot be negative.</value>
+  </data>
 </root>
