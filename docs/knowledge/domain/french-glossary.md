@@ -31,6 +31,7 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | Vouchers | Titres-repas et chèques |
 | Expense allowances | Indemnités de frais |
 | Home office rent | Loyer du bureau |
+| IT and phone (the PC, tablet, mobile phone, phone subscription and internet connection the company provides) | Informatique et téléphonie |
 | Company car | Voiture de société |
 | The split (the pay-versus-dividend concept) | La répartition |
 | To share (the node of the map: what the levers leave to split) | À partager |
@@ -65,6 +66,7 @@ Fixed once; every file that names one uses it word for word (the card, the map, 
 | measuring ideas (the Ideas badge, spoken, while one is measured) | chiffrage des pistes |
 | not in Netto yet (what Netto does not model, no promise) | pas encore dans Netto |
 | Car's benefit in kind before / after your contribution | Avantage de toute nature de la voiture avant / après votre intervention |
+| IT and phone's benefit in kind before / after your contribution | Avantage de toute nature de l'informatique et téléphonie avant / après votre intervention |
 | tested pay (art. 215) | rémunération prise en compte |
 | reserve (cash the company keeps) | montant gardé dans la société (never « réserve », which is a legal term) |
 | a bucket of the bar | un compartiment |
@@ -196,6 +198,7 @@ The French is the administration's wording; the source is the filed document in 
 | days actually worked | les journées de travail effectivement fournies | art. 38/1 §2 |
 | expense allowances | le remboursement de frais propres à la société | art. 32 al. 2 1° |
 | office · internet · computer allowance | l'indemnité forfaitaire de bureau · d'internet · d'ordinateur | circulaire 2021/C/20 |
+| a PC · a tablet · a mobile phone · a phone subscription · an internet connection, provided free of charge | un PC · une tablette · un téléphone mobile · un abonnement de téléphonie · une connexion internet, mis gratuitement à disposition | art. 18 §3, 10 AR/CIR 92 |
 | structural and regular telework | le télétravail structurel et régulier | circulaire 2021/C/20 |
 | cadastral income · revalued | le revenu cadastral (RC) · revalorisé | art. 13 |
 | five thirds of the revalued RC | les cinq tiers du revenu cadastral revalorisé | art. 32 al. 2 3° |
