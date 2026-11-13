@@ -151,6 +151,31 @@ public class YearConditionsTests
         Conditions(Scenario(allowances: FlatRateAllowances with { Office = 0m })).OfType<NoOfficeAllowanceBesideRent>().ShouldBeEmpty();
     }
 
+    // No flat computer allowance beside a PC or a tablet the company provides, no flat internet allowance beside
+    // an internet connection it pays (circular 2021/C/20, §52 and §48): the engine refuses the plan otherwise, so a
+    // year that runs with such pieces keeps the condition, with the PCs and tablets and the connection it holds.
+    [Fact]
+    public void Of_equipmentHoldingAPcATabletOrInternet_keepsNoAllowanceBesideIt()
+    {
+        var condition = Single<NoAllowanceBesideEquipment>(Scenario(
+            allowances: FlatRateAllowances with { Computer = 0m, Internet = 0m }, equipment: LaptopPhoneAndInternet with { Tablets = 1 }));
+
+        (condition, condition.Holds).ShouldBe((new NoAllowanceBesideEquipment(2, true), true));
+    }
+
+    // Phones and subscriptions exclude neither allowance: they set no condition on them.
+    [Fact]
+    public void Of_equipmentOfPhonesAlone_setsNoConditionOnTheAllowances()
+    {
+        Conditions(Scenario(equipment: LaptopPhoneAndInternet with { Pcs = 0, Internet = false })).OfType<NoAllowanceBesideEquipment>().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Of_noEquipment_setsNoConditionOnTheAllowances()
+    {
+        Conditions(Scenario(allowances: FlatRateAllowances)).OfType<NoAllowanceBesideEquipment>().ShouldBeEmpty();
+    }
+
     // The royalty lowers the taxable income art. 215 compares the pay with: the rate is kept from half of
     // the 80,000 a fixed 20,000 leaves, where the same year without it keeps it from half of 100,000.
     [Fact]

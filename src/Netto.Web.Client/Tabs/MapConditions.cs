@@ -24,6 +24,7 @@ internal static class MapConditions
     public static MapLink Link(YearCondition condition) => condition switch
     {
         NoOfficeAllowanceBesideRent => Of(condition, RiverModule.Allowances, RiverModule.Rent, MapTabText.OfficeState, null),
+        NoAllowanceBesideEquipment => Of(condition, RiverModule.Allowances, RiverModule.Rent, MapTabText.OfficeState, null),
         PayKeepsReducedRate pay => Of(condition, RiverModule.Split, RiverModule.CorporateTax, MapTabText.RateState(pay.Holds), pay.Holds ? null : RateLost),
         BenefitsWithinShareOfPay benefits => Of(condition, RiverModule.Car, RiverModule.CorporateTax, MapTabText.RateState(benefits.Holds), benefits.Holds ? null : RateLost),
         RoyaltyLowersPayKeepingReducedRate royalty => Of(condition, RiverModule.Copyright, RiverModule.Split, MapTabText.RoyaltyState(royalty), royalty is { Holds: false, With: null } ? RateLost : null),

@@ -3,7 +3,8 @@ using Netto.Core.Copyright;
 namespace Netto.Core.Simulation;
 
 // The conditions one part of the year sets on another, read from a year the engine ran, each only where
-// it applies, in the order the year meets them: the rent and the office allowance between the levers; on
+// it applies, in the order the year meets them: the rent and the office allowance, then the IT and phone and
+// the computer and internet allowances, between the levers; on
 // the corporate rate, the pay test and the benefits' share, as Corporate tax tested them, and what a
 // royalty does to the pay that keeps the rate, while the pay is tested and some pay keeps it with the
 // royalty or without it, since where none does the royalty plays no part in losing it; then the reserve on
@@ -20,6 +21,8 @@ public static class YearConditions
 
         if (scenario.Rent.Any || scenario.Allowances.Office > 0m)
             conditions.Add(new NoOfficeAllowanceBesideRent(year.Rent.Rent, scenario.Allowances.Office));
+        if (scenario.Equipment is { } set && (set.Pcs + set.Tablets > 0 || set.Internet))
+            conditions.Add(new NoAllowanceBesideEquipment(set.Pcs + set.Tablets, set.Internet));
         if (company.PayTest is { } test)
             conditions.Add(new PayKeepsReducedRate(test, company.MinimumDirectorPay, company.DirectorPay, company.TaxableIncome));
         if (company.BenefitsWithinShare is { } within)

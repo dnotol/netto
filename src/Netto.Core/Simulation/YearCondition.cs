@@ -20,7 +20,7 @@ public abstract record YearCondition
 public sealed record PayKeepsReducedRate(ReducedRateCondition Test, decimal MinimumPay, decimal Pay, decimal TaxableIncome)
     : YearCondition(Test.AppliesReducedRate());
 
-// Art. 215 al. 3, 5°, which flat-rate benefits such as a company car's set on the corporate rate: they
+// Art. 215 al. 3, 5°, which flat-rate benefits such as a company car's or the IT and phone's set on the corporate rate: they
 // are worth no more than their Share of the total Pay, the Benefits in it, as the year found.
 public sealed record BenefitsWithinShareOfPay(bool Within, decimal Benefits, decimal Pay, decimal Share) : YearCondition(Within);
 
@@ -28,6 +28,12 @@ public sealed record BenefitsWithinShareOfPay(bool Within, decimal Benefits, dec
 // office allowance never go together. The engine refuses a rent beside one, so a year that ran keeps it,
 // with the Rent or the OfficeAllowance it pays.
 public sealed record NoOfficeAllowanceBesideRent(decimal Rent, decimal OfficeAllowance) : YearCondition(true);
+
+// No flat computer allowance beside a PC or a tablet the company provides, no flat internet allowance beside an
+// internet connection it pays (circular 2021/C/20, §52 and §48). The engine refuses either allowance beside
+// them, so a year that ran keeps it, with the PCs and tablets (PcsAndTablets) and the Internet connection the
+// company provides.
+public sealed record NoAllowanceBesideEquipment(int PcsAndTablets, bool Internet) : YearCondition(true);
 
 // A copyright royalty, which the company deducts, lowers the taxable income art. 215 al. 3, 4° compares
 // the pay with, and so the smallest pay that keeps the reduced rate: With the royalty as the plan holds

@@ -21,6 +21,7 @@ public class MapConditionsTests
     public static TheoryData<YearCondition, RiverModule, RiverModule> Kinds => new()
     {
         { new NoOfficeAllowanceBesideRent(1_380m, 0m), RiverModule.Allowances, RiverModule.Rent },
+        { new NoAllowanceBesideEquipment(1, true), RiverModule.Allowances, RiverModule.Rent },
         { new PayKeepsReducedRate(ReducedRateCondition.MinimumPayNotMet, 51_000m, 40_000m, 60_000m), RiverModule.Split, RiverModule.CorporateTax },
         { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), RiverModule.Car, RiverModule.CorporateTax },
         { new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false), RiverModule.Copyright, RiverModule.Split },
@@ -73,6 +74,7 @@ public class MapConditionsTests
         { new BenefitsWithinShareOfPay(false, 1_714.29m, 6_714.29m, 0.20m), "lost" },
         { new NoOfficeAllowanceBesideRent(1_380m, 0m), "kept" },
         { new NoOfficeAllowanceBesideRent(0m, 1_938.44m), "kept" },
+        { new NoAllowanceBesideEquipment(1, true), "kept" },
         { new RoyaltyLowersPayKeepingReducedRate(40_000m, 50_000m, false), "lowers" },
         { new RoyaltyLowersPayKeepingReducedRate(40_000m, null, true), "lowers" },
         { new RoyaltyLowersPayKeepingReducedRate(51_000m, 51_000m, false), "no effect" },
@@ -156,7 +158,10 @@ public class MapConditionsTests
             () => badges.ShouldAllBe(badge => MapBadgeStyle.Icon(badge.Tone) != null));
     }
 
-    public static TheoryData<YearCondition> OfficeRules => new(new YearCondition[] { new NoOfficeAllowanceBesideRent(1_380m, 0m), new NoOfficeAllowanceBesideRent(0m, 1_938.44m) });
+    public static TheoryData<YearCondition> OfficeRules => new(new YearCondition[]
+    {
+        new NoOfficeAllowanceBesideRent(1_380m, 0m), new NoOfficeAllowanceBesideRent(0m, 1_938.44m), new NoAllowanceBesideEquipment(1, true),
+    });
 
     // The office rule always holds: it leaves no badge.
     [Theory]
@@ -171,7 +176,7 @@ public class MapConditionsTests
     [Fact]
     public void Badges_everyKindButTheOffice_isAmongThem()
     {
-        Kinds.Select(row => row.Data.Item1.GetType()).Where(kind => kind != typeof(NoOfficeAllowanceBesideRent))
+        Kinds.Select(row => row.Data.Item1.GetType()).Where(kind => kind != typeof(NoOfficeAllowanceBesideRent) && kind != typeof(NoAllowanceBesideEquipment))
             .ShouldBe(Badges.Select(row => row.Data.Item1.GetType()).Distinct(), ignoreOrder: true);
     }
 
