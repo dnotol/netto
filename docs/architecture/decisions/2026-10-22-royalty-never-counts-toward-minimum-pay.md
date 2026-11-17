@@ -4,6 +4,10 @@ title: No part of a copyright royalty counts toward the minimum director pay of 
 description: Law reading - art. 215 tests the taxable pay without a royalty's part taxed as pay (TaxablePayWithoutRequalified).
 status: stable
 decided: 2026-10-22
+acceptance_mode: unattended
+operator_review: confirmed
+verified:
+  - {by: "human:johnny-amadeus", at: "2026-11-17T15:16:22+01:00"}
 tags: [law-reading, engine]
 sources:
   - resource: https://app.notion.com/p/401b6b39bd128164b84ec739e9ee4124

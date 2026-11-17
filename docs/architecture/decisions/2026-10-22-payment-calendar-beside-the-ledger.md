@@ -4,6 +4,10 @@ title: The payment calendar is a record the engine builds beside the ledger, and
 description: When each payment falls is Calendar/PaymentCalendar, built from the year and a date; a step stays the year's total, undated.
 status: stable
 decided: 2026-10-22
+acceptance_mode: unattended
+operator_review: confirmed
+verified:
+  - {by: "human:johnny-amadeus", at: "2026-11-17T15:16:22+01:00"}
 tags: [engine]
 sources:
   - resource: https://app.notion.com/p/3fdb6b39bd1281688bb5c59f769478c9

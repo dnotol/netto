@@ -4,6 +4,10 @@ title: What a decree changes within the year is rule data, and each month withho
 description: WithholdingRules.Later holds the rules from a date; InMonth picks a month's; November 2026 is the first case.
 status: stable
 decided: 2026-10-25
+acceptance_mode: unattended
+operator_review: confirmed
+verified:
+  - {by: "human:johnny-amadeus", at: "2026-11-17T15:16:22+01:00"}
 tags: [rules, law-reading]
 sources:
   - resource: https://claude.ai/artifact/C2gkexviNGUUMzDbpaqaEX
