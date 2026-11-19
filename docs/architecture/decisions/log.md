@@ -2,6 +2,7 @@
 
 ## 2026-11-19
 
+- [A loss the earlier profits do not cover keeps no reserve, not even one of 0](/2026-11-19-a-loss-never-keeps-the-reserve.md) accepted by the operator at landing; it amends [the user sets what the company keeps](/2026-10-19-one-reserve-for-the-company.md), superseding nothing.
 - Proposed, from the work item « A pay that leaves the company at a loss no longer counts as keeping the reserve »: [a loss the earlier profits do not cover keeps no reserve, not even one of 0](/2026-11-19-a-loss-never-keeps-the-reserve.md), which once accepted amends [the user sets what the company keeps](/2026-10-19-one-reserve-for-the-company.md), superseding nothing.
 
 ## 2026-11-13

@@ -2,7 +2,8 @@
 type: adr
 title: A loss the earlier profits do not cover keeps no reserve, not even one of 0
 description: The reserve is kept while what the company holds at year end, its profit after tax plus the earlier profits, unclamped, reaches it; the split, the moves and the year's conditions read that one rule, and from a plan already short of it a move that leaves the company no less is still taken.
-status: draft
+status: stable
+accepted_by: human:Johnny Amadeus
 decided: 2026-11-19
 tags: [engine]
 sources:
