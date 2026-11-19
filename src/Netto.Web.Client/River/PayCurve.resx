@@ -48,6 +48,9 @@
   <data name="Figure_BestKeepingReserve" xml:space="preserve">
     <value>Best pay keeping {0} in the company</value>
   </data>
+  <data name="Figure_BestWithoutLoss" xml:space="preserve">
+    <value>Best pay without a loss</value>
+  </data>
   <data name="Figure_Dividend" xml:space="preserve">
     <value>Dividend</value>
   </data>

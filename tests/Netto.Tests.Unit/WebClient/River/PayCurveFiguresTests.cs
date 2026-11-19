@@ -79,6 +79,18 @@ public class PayCurveFiguresTests
             () => lines[0].Args.ShouldBe(["€60,000.00"]));
     }
 
+    // At a reserve of 0 the pay set misses it only by leaving the company at a loss: the best pay is
+    // named as the best without one, with no amount kept to name.
+    [Fact]
+    public void Best_paySetAtALossWithNoReserve_namesTheBestPayWithoutALoss()
+    {
+        var inputs = Example.WithContributionsPaidBy(ContributionsPaidBy.Company).WithDirectorPay(100_000m);
+
+        var lines = Best(inputs);
+
+        (lines[0].Key, lines[0].Args).ShouldBe(("Figure_BestWithoutLoss", (IReadOnlyList<string>)[]));
+    }
+
     // A royalty that follows the pay is another at the best pay; a fixed one is the same at every pay,
     // and the split's side says it.
     [Fact]

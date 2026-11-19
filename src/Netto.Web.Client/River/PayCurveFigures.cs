@@ -15,7 +15,8 @@ internal static class PayCurveFigures
     // and what reaches the pocket at the pay set, with its own. A pay set within a euro of the best is
     // the best: the lines are then the pay set's own figures, its pay, its dividend and what reaches the
     // pocket at it, and no royalty, which the sides above show at that same pay. A pay set whose profit
-    // cannot keep the reserve is weighed apart: the best pay that keeps it, against what the pay set
+    // cannot keep the reserve is weighed apart: the best pay that keeps it (at a reserve of 0, the best
+    // without a loss, since only a loss misses it), against what the pay set
     // leaves in the pocket and in the company, with no gain and no reach, the two not leaving the same
     // company behind. None when no pay keeps the reserve.
     public static IReadOnlyList<FigureLine> Best(SplitSearchView search, YearResult year, SplitRoyaltyView? royalty, decimal reserve)
@@ -33,7 +34,8 @@ internal static class PayCurveFigures
                 new FigureLine("Figure_BestIsYours", year.DirectorPay.GrossPay), new FigureLine("Figure_Dividend", year.Dividend.Dividend),
                 new FigureLine("Figure_InPocket", year.NetInPocket) { Share = search.Reach }),
             { YoursKeepsReserve: false } => SharedFigures.Shown(
-                new FigureLine("Figure_BestKeepingReserve", level.Pay) { Args = [Formats.Euros(reserve)] }, dividend, royaltyThere,
+                reserve > 0m ? new FigureLine("Figure_BestKeepingReserve", level.Pay) { Args = [Formats.Euros(reserve)] } : new FigureLine("Figure_BestWithoutLoss", level.Pay),
+                dividend, royaltyThere,
                 new FigureLine("Figure_InPocketThere", level.NetInPocket),
                 new FigureLine("Figure_InPocketAtYours", year.NetInPocket),
                 new FigureLine("Figure_KeptAtYours", year.KeptInCompany)),
