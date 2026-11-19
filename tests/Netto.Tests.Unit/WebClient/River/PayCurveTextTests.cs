@@ -25,6 +25,23 @@ public class PayCurveTextTests
         Resources.Missing(weighings.SelectMany(rate => new[] { PayCurveText.Rate(rate, 50_000m), PayCurveText.Rate(rate, 40_000m) })).ShouldBeEmpty();
     }
 
+    // A reserve above 0 is missed by keeping too little; one of 0 only by ending the year at a loss,
+    // which the curve's key and its sentence without a best pay say instead of keeping €0.00.
+    [Theory]
+    [InlineData(30_000, "KeyMissesReserve", "NoBest")]
+    [InlineData(0.01, "KeyMissesReserve", "NoBest")]
+    [InlineData(0, "KeyAtALoss", "NoBest_AtALoss")]
+    public void MissesReserveAndNoBest_reserve_sayALossOnlyAtNoReserve(decimal reserve, string key, string noBest)
+    {
+        (PayCurveText.MissesReserve(reserve), PayCurveText.NoBest(reserve)).ShouldBe((key, noBest));
+    }
+
+    [Fact]
+    public void PayCurveResx_everyWayOfMissingTheReserve_hasAText()
+    {
+        Resources.Missing([PayCurveText.MissesReserve(1m), PayCurveText.MissesReserve(0m), PayCurveText.NoBest(1m), PayCurveText.NoBest(0m)]).ShouldBeEmpty();
+    }
+
     // The best pay on the other side of the threshold is the pay set: what keeping the rate costs is
     // then what the best pay gains over it, which its line says, and the sentence names no amount.
     [Theory]

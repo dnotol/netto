@@ -36,6 +36,9 @@
   <data name="KeyMissesReserve" xml:space="preserve">
     <value>Too little profit to keep {0}</value>
   </data>
+  <data name="KeyAtALoss" xml:space="preserve">
+    <value>The company ends the year at a loss</value>
+  </data>
   <data name="Figure_Best" xml:space="preserve">
     <value>Best pay</value>
   </data>
@@ -86,6 +89,9 @@
   </data>
   <data name="NoBest" xml:space="preserve">
     <value>No pay keeps {0} in the company: at most {1} can stay there.</value>
+  </data>
+  <data name="NoBest_AtALoss" xml:space="preserve">
+    <value>Every pay leaves the company at a loss: at best, it ends the year with {1}.</value>
   </data>
   <data name="Rate_NotWeighed" xml:space="preserve">
     <value>Your pay does not change the corporate rate here; Corporate tax says why.</value>

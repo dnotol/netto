@@ -83,7 +83,7 @@
             }
             @if (curve.SomeMissReserve)
             {
-                <li><span class="pay-curve__key-mark pay-curve__key-mark--misses"></span>@L["KeyMissesReserve", Formats.Euros(Inputs.Reserve.Value)]</li>
+                <li><span class="pay-curve__key-mark pay-curve__key-mark--misses"></span>@L[PayCurveText.MissesReserve(Inputs.Reserve.Value), Formats.Euros(Inputs.Reserve.Value)]</li>
             }
         </ul>
         <p class="tune__pointer">@PointerText</p>
@@ -105,7 +105,7 @@
             }
             else
             {
-                <p class="tune__best">@L["NoBest", Formats.Euros(Inputs.Reserve.Value), Formats.Euros(search.MostKept)]</p>
+                <p class="tune__best">@L[PayCurveText.NoBest(Inputs.Reserve.Value), Formats.Euros(Inputs.Reserve.Value), Formats.Euros(search.MostKept)]</p>
             }
         </div>
     </section>

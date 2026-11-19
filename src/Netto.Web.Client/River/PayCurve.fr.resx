@@ -36,6 +36,9 @@
   <data name="KeyMissesReserve" xml:space="preserve">
     <value>Trop peu de bénéfice pour garder {0}</value>
   </data>
+  <data name="KeyAtALoss" xml:space="preserve">
+    <value>La société termine l'année en perte</value>
+  </data>
   <data name="Figure_Best" xml:space="preserve">
     <value>Meilleure rémunération</value>
   </data>
@@ -86,6 +89,9 @@
   </data>
   <data name="NoBest" xml:space="preserve">
     <value>Aucune rémunération ne permet de garder {0} dans la société&#160;: elle peut y garder au plus {1}.</value>
+  </data>
+  <data name="NoBest_AtALoss" xml:space="preserve">
+    <value>Chaque rémunération laisse la société en perte&#160;: au mieux, elle termine l'année avec {1}.</value>
   </data>
   <data name="Rate_NotWeighed" xml:space="preserve">
     <value>Votre rémunération ne change pas ici le taux de l'impôt des sociétés&#160;; la carte Impôt des sociétés dit pourquoi.</value>

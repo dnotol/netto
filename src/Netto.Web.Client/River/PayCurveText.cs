@@ -9,6 +9,12 @@ internal static class PayCurveText
     // pay; a fixed one is the same at every pay.
     public static string AlongTheCurve(string key, SplitRoyaltyView? royalty) => royalty is { FollowsPay.Value: true } ? $"{key}_Royalty" : key;
 
+    // A reserve above 0 is missed by keeping too little of it; a reserve of 0 only by ending the year at
+    // a loss, which the curve's key and its sentence without a best pay say instead of keeping €0.00.
+    public static string MissesReserve(decimal reserve) => reserve > 0m ? "KeyMissesReserve" : "KeyAtALoss";
+
+    public static string NoBest(decimal reserve) => reserve > 0m ? "NoBest" : "NoBest_AtALoss";
+
     // The sentence weighs the best pay on the other side of the threshold only when one keeps
     // the reserve, and names no amount when that pay is the pay set: what the best pay gains over it, its
     // line says.
