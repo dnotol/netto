@@ -32,5 +32,5 @@ A plan can already miss the reserve, at a loss whatever the pay or at a pay the 
 
 - The split's best pay never leaves the company at a loss the earlier profits do not cover; on the made-up company paying its director's contributions, the curve's last pays are dashed.
 - A company at a loss whatever the pay has no best pay; when the profit before pay is zero or less the curve is not drawn at all, as before.
-- The pay curve's key and its sentence without a best pay say « at a loss » at a reserve of 0 (`PayCurveText`).
+- At a reserve of 0, the pay curve's key and its sentence without a best pay say « at a loss » (`PayCurveText`), and its best pay is named the best « without a loss » (`PayCurveFigures`).
 - The bar's own wording at a loss is a separate work item.
