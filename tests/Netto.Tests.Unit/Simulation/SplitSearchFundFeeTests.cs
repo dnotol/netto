@@ -49,6 +49,6 @@ public class SplitSearchFundFeeTests
         var year = Run(scenario);
 
         return new PayLevel(scenario.DirectorPay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
-            year.MaximumDividend >= scenario.Reserve);
+            year.KeepsReserve);
     }
 }

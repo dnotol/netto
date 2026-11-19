@@ -42,6 +42,6 @@ public sealed record NoAllowanceBesideEquipment(int PcsAndTablets, bool Internet
 public sealed record RoyaltyLowersPayKeepingReducedRate(decimal? With, decimal? Without, bool FollowsPay)
     : YearCondition(With is { } with && (Without is not { } without || with < without));
 
-// The Reserve the user keeps in the company, which sets on the pay: the most the year can pay out
-// (MaximumDividend) covers it.
-public sealed record PayOutCoversReserve(decimal Reserve, decimal MaximumDividend) : YearCondition(YearResult.ReserveKept(MaximumDividend, Reserve));
+// The Reserve the user keeps in the company, which sets on the pay: what the company holds at year end
+// (YearResult.Held) covers it.
+public sealed record PayOutCoversReserve(decimal Reserve, decimal Held) : YearCondition(YearResult.ReserveKept(Held, Reserve));

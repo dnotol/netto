@@ -30,7 +30,7 @@ public static class YearConditions
         if (company.PayTest is not null && PaysRoyalty(year) && RoyaltyOnThePayTest(scenario) is { } royalty && (royalty.With ?? royalty.Without) is not null)
             conditions.Add(royalty);
         if (scenario.Reserve > 0m)
-            conditions.Add(new PayOutCoversReserve(scenario.Reserve, year.MaximumDividend));
+            conditions.Add(new PayOutCoversReserve(scenario.Reserve, year.Held));
 
         return conditions;
     }

@@ -189,7 +189,7 @@ public static class YearSimulation
 
         var company = Company(scenario, corporateRules, dividendRules, besidesPay, pay.YearNetInPocket, pay.TaxablePayWithoutRequalified, pay.CompanyCost);
         return new PayLevel(scenario.DirectorPay, company.NetInPocket, company.Dividend.Dividend, company.KeptInCompany, company.Tax.Condition,
-            YearResult.ReserveKept(company.MaximumDividend, scenario.Reserve)) { Royalty = besidesPay.Of<CopyrightYear>().Copyright.Royalty };
+            YearResult.ReserveKept(company.Held, scenario.Reserve)) { Royalty = besidesPay.Of<CopyrightYear>().Copyright.Royalty };
     }
 
     // The smallest director pay, as the split moves it, that keeps the reduced corporate rate out of the
@@ -330,7 +330,7 @@ public static class YearSimulation
         var maximumDividend = Math.Max(0m, held);
         var dividend = DividendCalculator.Compute(dividendRules, Math.Max(0m, maximumDividend - scenario.Reserve), scenario.DividendCategory);
 
-        return new CompanyFigures(tax, advancePayments, profitAfterTax, maximumDividend, dividend, netPay + dividend.NetDividend + besidesPay.ToPocket,
+        return new CompanyFigures(tax, advancePayments, profitAfterTax, held, maximumDividend, dividend, netPay + dividend.NetDividend + besidesPay.ToPocket,
             held - dividend.Dividend);
     }
 
@@ -360,6 +360,7 @@ public static class YearSimulation
         CorporateTaxResult Tax,
         AdvancePaymentResult AdvancePayments,
         decimal ProfitAfterTax,
+        decimal Held,
         decimal MaximumDividend,
         DividendResult Dividend,
         decimal NetInPocket,

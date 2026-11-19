@@ -92,14 +92,17 @@ public class SplitSearchCarTests
 
     // The company paying the contributions, the payslip gross at the 1,000 left has a taxable pay of the
     // gross and INASTI's minimum on it with the benefit, short of the 6,857.16 the benefit needs: no
-    // gross keeps the rate, and the split still finds its best pay.
+    // gross keeps the rate. The contributions the company bears leave it at a loss at every pay, so no
+    // pay keeps even a reserve of 0 and the split has no best pay.
     [Fact]
     public void Run_2026CarBeyondItsShareOfAnyPayCompanyPays_doesNotWeighTheRate()
     {
         var result = Search(Scenario(revenue: 29_000m, paidBy: ContributionsPaidBy.Company, car: ElectricCar));
 
-        (result.SmallestPayKeepingReducedRate, result.BestKeepingReducedRate, result.BestLosingReducedRate, result.Best is null)
-            .ShouldBe(((decimal?)null, (PayLevel?)null, (PayLevel?)null, false));
+        result.ShouldSatisfyAllConditions(
+            () => (result.SmallestPayKeepingReducedRate, result.BestKeepingReducedRate, result.BestLosingReducedRate, result.Best)
+                .ShouldBe(((decimal?)null, (PayLevel?)null, (PayLevel?)null, (PayLevel?)null)),
+            () => result.Curve.ShouldAllBe(level => level.KeptInCompany < 0m));
     }
 
     [Fact]
@@ -112,6 +115,6 @@ public class SplitSearchCarTests
     {
         var year = Run(scenario with { DirectorPay = pay });
 
-        return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition, year.MaximumDividend >= scenario.Reserve);
+        return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition, year.KeepsReserve);
     }
 }

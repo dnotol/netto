@@ -275,6 +275,35 @@ public class MoveSearchTests
         plan.Moves.ShouldBeEmpty();
     }
 
+    // At 90,000 of pay with the contributions the company bears, the made-up company already ends the
+    // year at a loss. Raising the pay still adds to the pocket but deepens the loss, so it is never
+    // taken.
+    [Fact]
+    public void Run_planAtALossAndAMoveDeepeningIt_isNotTaken()
+    {
+        var atALoss = Scenario(directorPay: 90_000m, paidBy: ContributionsPaidBy.Company);
+
+        var plan = MoveSearch.Run(atALoss, [new Fixed(new PayMove(100_000m))]).Value.ShouldNotBeNull();
+
+        plan.ShouldSatisfyAllConditions(
+            () => Run(atALoss).KeptInCompany.ShouldBeLessThan(0m),
+            () => Pocket(atALoss with { DirectorPay = 100_000m }).ShouldBeGreaterThan(Pocket(atALoss)),
+            () => plan.Moves.ShouldBeEmpty());
+    }
+
+    // From the same plan at a loss, a move that leaves the company as it is, here a lower municipal
+    // rate, is still taken: the reserve the plan already misses is no reason to refuse it.
+    [Fact]
+    public void Run_planAtALossAndAMoveLeavingTheCompanyAsItIs_isTaken()
+    {
+        var atALoss = Scenario(directorPay: 90_000m, paidBy: ContributionsPaidBy.Company);
+        var move = new MunicipalRateMove(0.06m);
+
+        var plan = MoveSearch.Run(atALoss, [new Fixed(move)]).Value.ShouldNotBeNull();
+
+        plan.Moves.Select(planned => planned.Move).ShouldBe([move]);
+    }
+
     // On 22 October the split moves first, then the company pays by 21 December what cancels the
     // surcharge on the corporate tax at the new pay, 19,800.25 (BucketsViewTests): 1,336.52 at 6.75%,
     // covered by 4.5% of 29,700.34, 1,336.5153, which rounds to it.
@@ -478,6 +507,11 @@ public class MoveSearchTests
     private sealed record ReserveMove(decimal Reserve) : Move
     {
         public override Scenario Apply(Scenario scenario) => scenario with { Reserve = Reserve };
+    }
+
+    private sealed record MunicipalRateMove(decimal Rate) : Move
+    {
+        public override Scenario Apply(Scenario scenario) => scenario with { MunicipalRate = MunicipalRates.IncomeYear2026.Entered(Rate) };
     }
 
     // Proposes the same move whatever the scenario.

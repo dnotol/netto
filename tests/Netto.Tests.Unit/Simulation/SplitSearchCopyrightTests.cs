@@ -196,7 +196,7 @@ public class SplitSearchCopyrightTests
     {
         var year = Run(scenario with { DirectorPay = pay });
 
-        return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition, year.MaximumDividend >= scenario.Reserve)
+        return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition, year.KeepsReserve)
         {
             Royalty = year.Copyright.Royalty,
         };

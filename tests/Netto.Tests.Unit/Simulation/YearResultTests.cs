@@ -1,4 +1,5 @@
 using Netto.Core.Simulation;
+using Netto.Core.SocialContributions;
 using Shouldly;
 using static Netto.Tests.Support.Fixtures;
 
@@ -46,5 +47,31 @@ public class YearResultTests
         var scenario = Scenario(directorPay: pay, reserve: reserve);
 
         Run(scenario).KeepsReserve.ShouldBe(YearSimulation.Level(scenario).ShouldNotBeNull().KeepsReserve);
+    }
+
+    // The made-up company's whole profit before pay, 100,000, paid as pay with the contributions the
+    // company bears for the director costs it more than it earns: the company ends the year at a loss,
+    // which keeps no reserve, not even one of 0, in the year or in the search's level at that pay.
+    [Fact]
+    public void KeepsReserve_payLeavingTheCompanyAtALoss_isNotKept()
+    {
+        var scenario = Scenario(directorPay: 100_000m, paidBy: ContributionsPaidBy.Company);
+
+        var year = Run(scenario);
+
+        year.ShouldSatisfyAllConditions(
+            () => year.ProfitAfterTax.ShouldBeLessThan(0m),
+            () => year.KeepsReserve.ShouldBeFalse(),
+            () => YearSimulation.Level(scenario).ShouldNotBeNull().KeepsReserve.ShouldBeFalse());
+    }
+
+    // Profits kept from earlier years absorb the year's loss first: while they cover it and the
+    // reserve, the reserve is kept.
+    [Fact]
+    public void KeepsReserve_lossCoveredByEarlierProfits_isKept()
+    {
+        var year = Run(Scenario(directorPay: 100_000m, paidBy: ContributionsPaidBy.Company, earlierProfits: 100_000m));
+
+        (year.ProfitAfterTax < 0m, year.KeepsReserve).ShouldBe((true, true));
     }
 }

@@ -321,14 +321,17 @@ public class SplitSearchTests
 
     // 3,000 before the director, 1,039.80 once the vouchers are paid for, and 1,080.20 of them the
     // company cannot deduct: a pay of 1,060 would be needed for the taxable income not to exceed it,
-    // more than there is to pay. No pay the split can give keeps the rate.
+    // more than there is to pay. No pay the split can give keeps the rate. Above 679, the tax on what
+    // the company cannot deduct leaves it at a loss, so the best pay stops there.
     [Fact]
     public void Run_2026VouchersTheCompanyCannotDeductAboveItsProfit_doesNotWeighTheRate()
     {
         var result = Search(Scenario(revenue: 23_000m, vouchers: MealVouchersOn220Days));
 
-        (result.Curve[^1].Pay, result.SmallestPayKeepingReducedRate, result.BestKeepingReducedRate, result.BestLosingReducedRate, result.Best?.Pay)
-            .ShouldBe((1_039.80m, (decimal?)null, (PayLevel?)null, (PayLevel?)null, (decimal?)1_039.80m));
+        result.ShouldSatisfyAllConditions(
+            () => (result.Curve[^1].Pay, result.SmallestPayKeepingReducedRate, result.BestKeepingReducedRate, result.BestLosingReducedRate, result.Best?.Pay)
+                .ShouldBe((1_039.80m, (decimal?)null, (PayLevel?)null, (PayLevel?)null, (decimal?)679m)),
+            () => result.Curve.Where(level => level.Pay > 679m).ShouldAllBe(level => level.KeptInCompany < 0m && !level.KeepsReserve));
     }
 
     [Fact]
@@ -510,6 +513,21 @@ public class SplitSearchTests
         Search(Scenario(reserve: 60_000m, earlierProfits: 60_000m)).Curve.ShouldAllBe(level => level.KeepsReserve);
     }
 
+    // With the contributions the company bears for the director, the pays near the whole profit
+    // before pay cost the company more than it earns. Each euro of pay there still reaches the
+    // pocket while the company sinks into a loss, so those pays keep no reserve, not even one of 0,
+    // and the best pay leaves the company something.
+    [Fact]
+    public void Run_2026ContributionsPaidByTheCompany_noPayLeavingALossIsTheBest()
+    {
+        var result = Search(Scenario(paidBy: ContributionsPaidBy.Company));
+
+        result.ShouldSatisfyAllConditions(
+            () => result.Curve.ShouldContain(level => level.KeptInCompany < 0m),
+            () => result.Curve.ShouldAllBe(level => level.KeepsReserve == level.KeptInCompany >= 0m),
+            () => result.Best.ShouldNotBeNull().KeptInCompany.ShouldBeGreaterThanOrEqualTo(0m));
+    }
+
     // The most the year can keep is 75,000, at no pay.
     [Fact]
     public void Run_2026ReserveNoPayCanKeep_namesNoBestPay()
@@ -556,15 +574,23 @@ public class SplitSearchTests
             .ShouldBe(((decimal?)10_000m, (decimal?)6_438.32m, (decimal?)4_999m, (decimal?)4_662.87m));
     }
 
-    [Theory]
-    [InlineData(20_000)]
-    [InlineData(15_000)]
-    public void Run_2026NoProfitBeforePay_hasOnlyNoPay(int revenue)
+    [Fact]
+    public void Run_2026NoProfitBeforePay_hasOnlyNoPay()
     {
-        var result = Search(Scenario(revenue: revenue));
+        var result = Search(Scenario(revenue: 20_000m));
 
         (result.Curve.Select(level => level.Pay).Single(), result.Best?.Pay, result.Best?.NetInPocket)
             .ShouldBe((0m, (decimal?)0m, (decimal?)-3_561.68m));
+    }
+
+    // 5,000 short of the costs, the company ends the year at a loss even at no pay: no pay keeps even
+    // a reserve of 0, so the split has no best pay.
+    [Fact]
+    public void Run_2026LossBeforePay_hasOnlyNoPayAndNoBest()
+    {
+        var result = Search(Scenario(revenue: 15_000m));
+
+        (result.Curve.Single().Pay, result.Curve.Single().KeepsReserve, result.Best).ShouldBe((0m, false, (PayLevel?)null));
     }
 
     // 1,000,000 of profit is drawn every 10,000.
@@ -638,6 +664,6 @@ public class SplitSearchTests
             vouchers: vouchers, allowances: allowances, rent: rent, band: band));
 
         return new PayLevel(pay, year.NetInPocket, year.Dividend.Dividend, year.KeptInCompany, year.Company.Condition,
-            year.MaximumDividend >= reserve);
+            year.KeepsReserve);
     }
 }

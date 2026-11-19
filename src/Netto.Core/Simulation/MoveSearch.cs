@@ -173,7 +173,7 @@ public static class MoveSearch
         var moves = new List<PlannedMove>();
         for (var round = 0; round < MaximumRounds; round++)
         {
-            if (Best(finders, current, currentYear.NetInPocket) is not { } move)
+            if (Best(finders, current, currentYear) is not { } move)
                 break;
 
             var taken = moves.FindIndex(planned => Equals(planned.Move.Kind, move.Move.Kind));
@@ -189,16 +189,18 @@ public static class MoveSearch
     }
 
     // The move that adds the most from where the plan stands, of those the engine takes, that keep the
-    // reserve and add a euro or more, with the year it leaves; none otherwise.
-    private static (Move Move, Scenario After, YearResult Year, decimal Gain)? Best(IReadOnlyList<IMoveFinder> finders, Scenario current, decimal inPocket) =>
+    // reserve and add a euro or more, with the year it leaves; none otherwise. From a plan that already
+    // misses the reserve, a move that leaves the company no less than the plan does is taken too
+    // (decided 2026-11-19): a pay at a loss whatever the pay must not cost the plan its other moves.
+    private static (Move Move, Scenario After, YearResult Year, decimal Gain)? Best(IReadOnlyList<IMoveFinder> finders, Scenario current, YearResult currentYear) =>
         finders
             .Select(finder => finder.Find(current))
             .OfType<Move>()
             .Select(move => (Move: move, After: move.Apply(current)))
             .Select(candidate => (candidate.Move, candidate.After, Year: YearSimulation.Run(candidate.After).Value))
-            .Where(candidate => candidate.Year is { KeepsReserve: true })
+            .Where(candidate => candidate.Year is { } year && (year.KeepsReserve || year.KeptInCompany >= currentYear.KeptInCompany))
             .Select(candidate => (candidate.Move, candidate.After, Year: candidate.Year!))
-            .Select(candidate => (candidate.Move, candidate.After, candidate.Year, Gain: candidate.Year.NetInPocket - inPocket))
+            .Select(candidate => (candidate.Move, candidate.After, candidate.Year, Gain: candidate.Year.NetInPocket - currentYear.NetInPocket))
             .Where(candidate => candidate.Gain >= SmallestGain)
             .Aggregate(((Move Move, Scenario After, YearResult Year, decimal Gain)?)null,
                 (taken, candidate) => taken is { } kept && kept.Gain >= candidate.Gain ? kept : candidate);

@@ -60,10 +60,16 @@ public sealed record YearResult(
     // income adds back the disallowed expenses.
     public decimal ProfitAfterPay => ProfitBeforePay - DirectorPay.CompanyCost;
 
-    // Whether the most the year can pay out covers the reserve the user keeps in the company.
-    public bool KeepsReserve => ReserveKept(MaximumDividend, Scenario.Reserve);
+    // What the company holds at year end before it pays a dividend: the year's profit after tax and the
+    // profits kept from earlier years, which a loss eats into; below zero when they do not cover it.
+    public decimal Held => ProfitAfterTax + Scenario.EarlierProfits;
 
-    // The one rule the year, the split's search at each pay (PayLevel) and the moves read: the reserve
-    // is kept while the most the company can pay out reaches it.
-    internal static bool ReserveKept(decimal maximumDividend, decimal reserve) => maximumDividend >= reserve;
+    // Whether what the company holds at year end covers the reserve the user keeps in it.
+    public bool KeepsReserve => ReserveKept(Held, Scenario.Reserve);
+
+    // The one rule the year, the split's search at each pay (PayLevel), the moves and the year's
+    // conditions read: the reserve is kept while what the company holds at year end reaches it. A loss
+    // the earlier profits do not cover keeps none, not even a reserve of 0, since the year would then
+    // pay out money the company does not have (decided 2026-11-19).
+    internal static bool ReserveKept(decimal held, decimal reserve) => held >= reserve;
 }
