@@ -1,5 +1,9 @@
 # Log
 
+## 2026-11-19
+
+- Proposed, from the work item « A pay that leaves the company at a loss no longer counts as keeping the reserve »: [a loss the earlier profits do not cover keeps no reserve, not even one of 0](/2026-11-19-a-loss-never-keeps-the-reserve.md), which once accepted amends [the user sets what the company keeps](/2026-10-19-one-reserve-for-the-company.md), superseding nothing.
+
 ## 2026-11-13
 
 - [The plan page has two views, and a lever is found in « Edit plan »](/2026-11-13-two-views-and-levers-are-found-in-edit-plan.md) and [Optimise is three sub-tabs](/2026-11-13-optimise-in-three-sub-tabs.md) accepted by the operator at landing; [an idea's gain is optimised against optimised](/2026-11-11-an-ideas-gain-is-optimised-against-optimised.md) deprecated, superseded by the first, which also amends [three views](/2026-11-11-three-views-one-question-each.md); the second amends [when to pay is a section of Optimise](/2026-11-11-when-to-pay-is-a-section-of-optimise.md), superseding nothing.
